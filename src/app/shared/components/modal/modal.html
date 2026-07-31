@@ -1,0 +1,11 @@
+<dialog #dialog (close)="onClose()" (click)="onBackdrop($event)"
+        aria-labelledby="modal-heading">
+  <div class="sheet">
+    <header class="sheet-head">
+      <h2 id="modal-heading">{{ heading() }}</h2>
+      <button type="button" class="x" (click)="close()" aria-label="Fechar">×</button>
+    </header>
+
+    <ng-content />
+  </div>
+</dialog>

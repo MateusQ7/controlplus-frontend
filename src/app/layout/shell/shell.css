@@ -1,0 +1,202 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 40;
+}
+
+.topbar > i {
+  display: block;
+  height: 100%;
+  width: 21%;
+  background: var(--color-accent);
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- sidebar ---------- */
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 30px 18px 22px;
+  background: var(--color-panel);
+  border-right: 1px solid var(--color-hairline);
+  z-index: 30;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.04em;
+  padding: 0 10px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: var(--color-fg);
+  text-decoration: none;
+  user-select: none;
+}
+
+.brand svg {
+  width: 0.6em;
+  height: 0.6em;
+  flex: none;
+}
+
+.nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.nav-label {
+  margin: 0 0 10px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: var(--text-sub);
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav a:hover {
+  background: var(--color-raised);
+  color: var(--color-fg);
+}
+
+/* a faixa verde marca a rota ativa — cor sozinha não basta, o peso muda junto */
+.marker {
+  width: 2px;
+  height: 15px;
+  border-radius: 2px;
+  background: transparent;
+  flex: none;
+  transition: background 0.15s;
+}
+
+.nav a.active {
+  background: var(--color-raised);
+  color: var(--color-fg);
+  font-weight: 500;
+}
+
+.nav a.active .marker {
+  background: var(--color-accent);
+}
+
+.side-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 18px 10px 0;
+  border-top: 1px solid var(--color-hairline);
+}
+
+.who {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- conteúdo ---------- */
+.content {
+  min-width: 0;
+}
+
+.menu-toggle {
+  display: none;
+}
+
+.scrim {
+  display: none;
+}
+
+/* ---------- telas estreitas ---------- */
+@media (max-width: 940px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 252px;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+  }
+
+  .menu-open .sidebar {
+    transform: translateX(0);
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    position: fixed;
+    top: 16px;
+    right: 18px;
+    z-index: 35;
+    background: var(--color-panel);
+  }
+
+  .menu-open .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    border: none;
+    background: rgba(0, 0, 0, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+}

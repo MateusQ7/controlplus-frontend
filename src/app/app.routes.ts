@@ -1,3 +1,46 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+    {
+        path: 'login',
+        loadComponent: () => import('./features/login/login').then((m) => m.Login)
+    },
+    {
+        // Tudo que exige sessão vive dentro da casca: uma sidebar só, um guard só.
+        path: '',
+        canActivate: [authGuard],
+        loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
+        children: [
+            {
+                path: 'dashboard',
+                loadComponent: () =>
+                    import('./features/dashboard/dashboard').then((m) => m.Dashboard)
+            },
+            {
+                path: 'lancamentos',
+                loadComponent: () =>
+                    import('./features/transactions/transactions').then((m) => m.Transactions)
+            },
+            {
+                path: 'orcamentos',
+                loadComponent: () =>
+                    import('./features/budgets/budgets').then((m) => m.Budgets)
+            },
+            {
+                path: 'categorias',
+                loadComponent: () =>
+                    import('./features/categories/categories').then((m) => m.Categories)
+            },
+            {
+                path: '',
+                pathMatch: 'full',
+                redirectTo: 'dashboard'
+            }
+        ]
+    },
+    {
+        path: '**',
+        redirectTo: ''
+    }
+];

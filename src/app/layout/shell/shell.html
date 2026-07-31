@@ -1,0 +1,49 @@
+<div class="topbar"><i></i></div>
+
+<div class="shell" [class.menu-open]="menuOpen()">
+
+  <aside class="sidebar" aria-label="Navegação principal">
+    <a class="brand" routerLink="/dashboard" (click)="closeMenu()">
+      <span>Control</span>
+      <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+        <path d="M50 26v48M26 50h48" stroke="#6DCB9B" stroke-opacity="0.9"
+              stroke-width="10" stroke-linecap="square" />
+      </svg>
+    </a>
+
+    <nav class="nav">
+      <p class="nav-label">Menu</p>
+      <ul>
+        @for (item of nav; track item.path) {
+          <li>
+            <a [routerLink]="item.path" routerLinkActive="active"
+               [title]="item.source" (click)="closeMenu()">
+              <i class="marker" aria-hidden="true"></i>{{ item.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="side-foot">
+      @if (user(); as email) {
+        <p class="who" [title]="email">{{ email }}</p>
+      }
+      <button type="button" class="btn btn-ghost" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <div class="content">
+    <button type="button" class="menu-toggle btn btn-ghost" (click)="toggleMenu()"
+            [attr.aria-expanded]="menuOpen()" aria-controls="conteudo">
+      {{ menuOpen() ? 'Fechar' : 'Menu' }}
+    </button>
+
+    <main id="conteudo">
+      <router-outlet />
+    </main>
+  </div>
+
+  <button type="button" class="scrim" (click)="closeMenu()" tabindex="-1"
+          aria-hidden="true"></button>
+</div>

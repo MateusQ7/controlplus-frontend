@@ -1,0 +1,107 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.budget-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.budget-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.budget-figure {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.budget-of {
+  margin: 7px 0 14px;
+  font-size: 12.5px;
+  color: var(--color-faint);
+}
+
+.budget-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0 0;
+}
+
+.budget-foot dt {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.budget-foot dd {
+  margin: 6px 0 0;
+  font-size: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-foot dd.over {
+  color: var(--color-danger-fg);
+}
+
+.budget-foot div:last-child {
+  text-align: right;
+}
+
+.budget-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-hairline);
+}
+
+/* ações discretas até hover, mas sempre alcançáveis pelo teclado */
+.icon {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.budget:hover .icon,
+.icon:focus-visible {
+  opacity: 1;
+}
+
+.icon:hover {
+  background: var(--color-raised);
+  color: var(--color-fg);
+}
+
+.icon.danger:hover {
+  color: var(--color-danger-fg);
+}
+
+@media (hover: none) {
+  .icon {
+    opacity: 1;
+  }
+}
