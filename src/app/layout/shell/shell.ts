@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
 
 interface NavItem {
   path: string;
@@ -11,7 +12,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ThemeToggle],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })
@@ -22,6 +23,9 @@ export class Shell {
 
   protected readonly user = this.auth.user;
   protected readonly menuOpen = signal(false);
+
+  /** Primeira letra do e-mail — o backend não expõe nome de usuário. */
+  protected readonly initial = computed(() => this.user()?.trim().charAt(0) || '?');
 
   protected readonly nav: NavItem[] = [
     { path: '/dashboard', label: 'Visão geral', source: '/transactions/summary' },

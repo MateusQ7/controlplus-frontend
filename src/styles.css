@@ -34,6 +34,17 @@
   --color-status-warning: #e8b04b;
   --color-status-exceed: #e05a60;
 
+  /* rampa das barras de categoria: mais forte no maior valor */
+  --bar-1: #f2f4f3;
+  --bar-2: #b9c0bb;
+  --bar-3: #868d88;
+  --bar-4: #5c625f;
+
+  /* campo cheio do login e marca da sidebar */
+  --input-bg: #171b1a;
+  --mark-bg: #6dcb9b;
+  --mark-fg: #0d0f0e;
+
   --text-label: 10.5px;
   --text-eyebrow: 11px;
   --text-sub: 13.5px;
@@ -45,25 +56,76 @@
   --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, monospace;
 }
 
+/*
+ * Tema claro. O @theme acima é o escuro (padrão); este bloco redefine os mesmos
+ * tokens quando o <html> carrega data-theme="light", então cartão, tabela, selo
+ * e toda a camada global viram claros sozinhos. Quem escreve o atributo é o
+ * ThemeService — e o script inline do index.html, antes da primeira pintura.
+ */
+:root[data-theme='light'] {
+  --color-ink: #f6f6f4;
+  --color-panel: #ffffff;
+  --color-card: #ffffff;
+  --color-card-edge: #e7e7e2;
+  --color-hairline: #ececE7;
+  --color-raised: #f1f1ed;
+  --color-track: #ececE7;
+
+  --color-fg: #16181c;
+  --color-muted: #5a5f5a;
+  --color-faint: #6e736e;
+
+  /* verde e vermelho re-escalonados: os do escuro não passam de 2:1 no branco */
+  --color-accent: #17804a;
+  --color-accent-hi: #12703f;
+  --color-danger: #d14a42;
+  --color-danger-fg: #c0392f;
+
+  --color-status-ok: #349061;
+  --color-status-warning: #b8801c;
+  --color-status-exceed: #d14a42;
+
+  --bar-1: #1b1f23;
+  --bar-2: #3f443f;
+  --bar-3: #6b706b;
+  --bar-4: #9aa09a;
+
+  --input-bg: #ffffff;
+  --mark-bg: #16181c;
+  --mark-fg: #6dcb9b;
+
+  /* botão primário preto no claro; no escuro cai no verde da marca */
+  --btn-bg: #16181c;
+  --btn-fg: #ffffff;
+  --btn-bg-hover: #2a2d33;
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
+  background: var(--color-ink);
+  color: var(--color-fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/*
- * Tokens do spartan/shadcn apontados para a paleta acima.
- * O app é dark-only, então :root já é o tema escuro; .dark fica como alias
- * para qualquer componente que alterne a classe.
- */
-:root,
-:root.dark {
+/* diz ao navegador como pintar scrollbar, seletor de data e autofill */
+:root {
   color-scheme: dark;
+}
 
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+/*
+ * Tokens do spartan/shadcn apontados para a paleta acima. Como apontam para os
+ * --color-*, seguem o tema ativo sem precisar de um segundo bloco.
+ */
+:root {
   --radius: 0.625rem;
 
   --background: var(--color-ink);
@@ -147,15 +209,19 @@ body {
 
 /* ---------- moldura de página ---------- */
 .page {
-  max-width: 1120px;
+  max-width: 1500px;
   margin: 0 auto;
-  padding: 34px 40px 72px;
+  padding: 36px clamp(24px, 3.2vw, 56px) 80px;
 }
 
 /* o botão Menu é fixo no topo direito abaixo de 940px — abre espaço pra ele */
+/*
+ * Só o topo: o botão Menu é fixo no canto direito abaixo de 940px e precisa
+ * de espaço. As laterais continuam com o clamp, senão ele seria desfeito aqui.
+ */
 @media (max-width: 940px) {
   .page {
-    padding: 66px 22px 56px;
+    padding-top: 66px;
   }
 }
 
@@ -229,7 +295,7 @@ body {
 }
 
 .card {
-  padding: 24px 26px 26px;
+  padding: 28px 30px 30px;
   border: 1px solid var(--color-card-edge);
   border-radius: 16px;
   background:
@@ -271,8 +337,9 @@ body {
   padding: 8px 15px;
   border: 1px solid transparent;
   border-radius: 999px;
-  background: var(--color-accent);
-  color: #0b2118;
+  /* o tema define a cor do botão primário: verde no escuro, preto no claro */
+  background: var(--btn-bg, var(--color-accent));
+  color: var(--btn-fg, #0b2118);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -281,7 +348,7 @@ body {
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--color-accent-hi);
+  background: var(--btn-bg-hover, var(--color-accent-hi));
 }
 
 .btn:disabled {
@@ -400,8 +467,9 @@ select.control option {
   font-size: var(--text-sub);
 }
 
+/* folga entre colunas: sem ela o valor cola na coluna seguinte em tela larga */
 .data-table th {
-  padding: 0 0 11px;
+  padding: 0 20px 11px 0;
   text-align: left;
   font-family: var(--font-mono);
   font-size: var(--text-label);
@@ -413,8 +481,13 @@ select.control option {
 }
 
 .data-table td {
-  padding: 13px 0;
+  padding: 13px 20px 13px 0;
   border-bottom: 1px solid var(--color-hairline);
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  padding-right: 0;
 }
 
 .data-table tbody tr:last-child td {
@@ -510,9 +583,11 @@ select.control option {
   gap: 9px;
   margin-bottom: 22px;
   padding: 11px 13px;
-  border: 1px solid rgba(224, 90, 96, 0.32);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 34%, transparent);
   border-radius: 9px;
-  background: rgba(224, 90, 96, 0.07);
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  /* o ícone usa currentColor, então herda o vermelho do tema em uso */
+  color: var(--color-danger-fg);
 }
 
 .alert svg {

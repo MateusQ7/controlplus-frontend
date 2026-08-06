@@ -1,0 +1,25 @@
+.toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--color-hairline);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.toggle:hover {
+  background: var(--color-raised);
+  border-color: var(--color-card-edge);
+  color: var(--color-fg);
+}
+
+.toggle svg {
+  width: 16px;
+  height: 16px;
+}

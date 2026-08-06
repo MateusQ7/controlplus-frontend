@@ -1,14 +1,14 @@
-<div class="topbar"><i></i></div>
-
 <div class="shell" [class.menu-open]="menuOpen()">
 
   <aside class="sidebar" aria-label="Navegação principal">
     <a class="brand" routerLink="/dashboard" (click)="closeMenu()">
-      <span>Control</span>
-      <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
-        <path d="M50 26v48M26 50h48" stroke="#6DCB9B" stroke-opacity="0.9"
-              stroke-width="10" stroke-linecap="square" />
-      </svg>
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="3.4"
+                stroke-linecap="square" />
+        </svg>
+      </span>
+      Control+
     </a>
 
     <nav class="nav">
@@ -17,19 +17,19 @@
         @for (item of nav; track item.path) {
           <li>
             <a [routerLink]="item.path" routerLinkActive="active"
-               [title]="item.source" (click)="closeMenu()">
-              <i class="marker" aria-hidden="true"></i>{{ item.label }}
-            </a>
+               [title]="item.source" (click)="closeMenu()">{{ item.label }}</a>
           </li>
         }
       </ul>
     </nav>
 
     <div class="side-foot">
-      @if (user(); as email) {
-        <p class="who" [title]="email">{{ email }}</p>
-      }
-      <button type="button" class="btn btn-ghost" (click)="logout()">Sair</button>
+      <span class="avatar" aria-hidden="true">{{ initial() }}</span>
+      <div class="who">
+        <p class="who-name" [title]="user() ?? ''">{{ user() ?? 'Minha conta' }}</p>
+        <button type="button" class="who-out" (click)="logout()">Sair</button>
+      </div>
+      <app-theme-toggle />
     </div>
   </aside>
 

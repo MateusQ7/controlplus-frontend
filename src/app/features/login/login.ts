@@ -3,40 +3,45 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MarketService } from '../../core/services/market.service';
+import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
+import { MarketSnapshot } from '../../core/models/market';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ThemeToggle],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login {
-
-  private readonly fb = inject(FormBuilder)
-  private readonly auth = inject(AuthService)
-  private readonly router = inject(Router)
+  private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly market = inject(MarketService);
 
   protected readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]]
-  })
+    password: ['', [Validators.required]],
+    rememberMe: [false],
+  });
 
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly passwordVisible = signal(false);
 
-  protected togglePassword(): void {
-    this.passwordVisible.update((visible) => !visible);
+  /** null até chegar da rede; se falhar, a faixa simplesmente não aparece. */
+  protected readonly market$ = signal<MarketSnapshot | null>(null);
+
+  constructor() {
+    void this.loadIndicators();
   }
 
-  protected showEmailError(): boolean {
-    const control = this.form.controls.email;
-    return control.invalid && control.touched;
-  }
-
-  protected showPasswordError(): boolean {
-    const control = this.form.controls.password;
-    return control.invalid && control.touched;
+  private async loadIndicators(): Promise<void> {
+    // A faixa é decorativa: falhar aqui não pode atrapalhar o login.
+    try {
+      this.market$.set(await this.market.getSnapshot());
+    } catch {
+      this.market$.set(null);
+    }
   }
 
   protected async submit(): Promise<void> {
@@ -63,6 +68,16 @@ export class Login {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  protected showEmailError(): boolean {
+    const control = this.form.controls.email;
+    return control.invalid && control.touched;
+  }
+
+  protected showPasswordError(): boolean {
+    const control = this.form.controls.password;
+    return control.invalid && control.touched;
   }
 
   private messageFor(error: unknown): string {

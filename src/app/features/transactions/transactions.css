@@ -2,8 +2,10 @@
   color: var(--color-accent);
 }
 
+/* width 1% encolhe a coluna ao conteúdo; o padding evita colar no valor */
 .data-table .actions {
   width: 1%;
+  padding-left: 16px;
   white-space: nowrap;
   text-align: right;
 }
