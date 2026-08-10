@@ -2,12 +2,18 @@
 
   <aside class="sidebar" aria-label="Navegação principal">
     <a class="brand" routerLink="/dashboard" (click)="closeMenu()">
-      <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="3.4"
-                stroke-linecap="square" />
-        </svg>
-      </span>
+      <!--
+        Mesma arte de public/control-plus-icone-verde.svg, inline para o miolo
+        acompanhar o tema pelos mesmos tokens do lockup do login.
+      -->
+      <svg class="mark" viewBox="0 0 512 512" aria-hidden="true">
+        <rect x="0" y="0" width="512" height="512" rx="128" class="sq" />
+        <rect x="61.44" y="296.96" width="71.68" height="122.88" rx="25.6" class="br" />
+        <rect x="163.84" y="225.28" width="71.68" height="194.56" rx="25.6" class="br" />
+        <rect x="266.24" y="153.6" width="71.68" height="266.24" rx="25.6" class="br" />
+        <rect x="348.16" y="79.36" width="122.88" height="46.08" rx="23.04" class="br" />
+        <rect x="386.56" y="40.96" width="46.08" height="122.88" rx="23.04" class="br" />
+      </svg>
       Control+
     </a>
 
@@ -26,7 +32,9 @@
     <div class="side-foot">
       <span class="avatar" aria-hidden="true">{{ initial() }}</span>
       <div class="who">
-        <p class="who-name" [title]="user() ?? ''">{{ user() ?? 'Minha conta' }}</p>
+        <p class="who-name" [title]="user()?.email ?? ''">
+          {{ user()?.name ?? 'Minha conta' }}
+        </p>
         <button type="button" class="who-out" (click)="logout()">Sair</button>
       </div>
       <app-theme-toggle />

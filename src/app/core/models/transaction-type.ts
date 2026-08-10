@@ -1,2 +1,2 @@
-export type TransactionType = 'INCOME'| 'EXPENSE';
-export type BudgetStatus = 'OK' | 'WARNING' | 'EXCEED';
+export type TransactionType = 'INCOME'| 'EXPENSE' | 'INVESTMENT';
+export type BudgetStatus = 'OK' | 'WARNING' | 'EXCEEDED';

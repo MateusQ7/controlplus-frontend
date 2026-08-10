@@ -2,6 +2,10 @@
   color: var(--color-accent);
 }
 
+.data-table td.num[data-type='INVESTMENT'] {
+  color: var(--color-invest);
+}
+
 /* width 1% encolhe a coluna ao conteúdo; o padding evita colar no valor */
 .data-table .actions {
   width: 1%;

@@ -60,14 +60,13 @@
               <td>{{ item.description }}</td>
               <td class="dim hide-narrow">{{ item.category.name }}</td>
               <td class="hide-narrow">
-                <span class="badge"
-                      [attr.data-tone]="item.type === 'INCOME' ? 'income' : 'expense'">
+                <span class="badge" [attr.data-tone]="typeTone(item.type)">
                   <i class="badge-icon" aria-hidden="true"></i>
-                  {{ item.type === 'INCOME' ? 'Receita' : 'Despesa' }}
+                  {{ typeLabel(item.type) }}
                 </span>
               </td>
               <td class="num" [attr.data-type]="item.type">
-                {{ item.type === 'EXPENSE' ? '−' : '+' }}{{ money(item.amount) }}
+                {{ typeSign(item.type) }}{{ money(item.amount) }}
               </td>
               <td class="actions">
                 <button type="button" class="icon" (click)="openEdit(item)"
@@ -111,9 +110,12 @@
       <div class="field-row">
         <div class="field">
           <label for="tx-amount">Valor</label>
-          <input id="tx-amount" class="control" type="number" inputmode="decimal"
-                 step="0.01" min="0.01" formControlName="amount" placeholder="0,00"
-                 [attr.aria-invalid]="invalid('amount') || null" />
+          <div class="money">
+            <span class="prefix" aria-hidden="true">R$</span>
+            <input id="tx-amount" class="control" type="text" appCurrency
+                   formControlName="amount" placeholder="0,00"
+                   [attr.aria-invalid]="invalid('amount') || null" />
+          </div>
           @if (invalid('amount')) {
             <p class="hint">Informe um valor maior que zero.</p>
           }
@@ -134,6 +136,7 @@
         <select id="tx-type" class="control" formControlName="type" (change)="onTypeChange()">
           <option value="EXPENSE">Despesa</option>
           <option value="INCOME">Receita</option>
+          <option value="INVESTMENT">Investimento</option>
         </select>
       </div>
 

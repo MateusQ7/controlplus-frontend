@@ -3,13 +3,15 @@ export interface MarketIndicator {
   value: string;
   /** Data de referência do próprio dado, em dd/mm/aaaa — não é a data da consulta. */
   reference: string;
-  /** Marca o valor com a cor da marca — hoje só o dólar. */
+  /** Variação percentual do dia, quando a fonte informa. */
+  change?: number;
+  /** Marca o valor com a cor da marca — usado no primeiro câmbio de cada grupo. */
   highlight?: boolean;
 }
 
 export interface MarketSnapshot {
   indicators: MarketIndicator[];
-  /** Quando o front buscou os números, em dd/mm/aaaa. */
+  /** Quando o front buscou os números, em dd/mm/aaaa HH:mm. */
   fetchedAt: string;
 }
 
@@ -19,10 +21,12 @@ export interface SgsPoint {
   valor: string;
 }
 
-/** Resposta de https://economia.awesomeapi.com.br/last/USD-BRL */
+/** Uma cotação de https://economia.awesomeapi.com.br/last/{pares} */
 export interface AwesomeQuote {
-  USDBRL: {
-    bid: string;
-    create_date: string;
-  };
+  bid: string;
+  pctChange: string;
+  create_date: string;
 }
+
+/** A resposta chega com uma chave por par, sem hífen: USDBRL, EURBRL… */
+export type AwesomeResponse = Record<string, AwesomeQuote>;

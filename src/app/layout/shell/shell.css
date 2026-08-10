@@ -42,21 +42,19 @@
   user-select: none;
 }
 
-/* marca: quadrado com o "+" vazado — as duas cores invertem com o tema */
+/* o rx=128 do próprio SVG já arredonda o quadrado, então não há border-radius */
 .mark {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   flex: none;
-  border-radius: 7px;
-  background: var(--mark-bg);
-  display: grid;
-  place-items: center;
 }
 
-.mark svg {
-  width: 12px;
-  height: 12px;
-  color: var(--mark-fg);
+.mark .sq {
+  fill: var(--logo-square);
+}
+
+.mark .br {
+  fill: var(--logo-bars);
 }
 
 .nav {

@@ -40,6 +40,10 @@ export class Categories {
     this.items().filter((item) => item.type === 'EXPENSE')
   );
 
+  protected readonly investment = computed(() =>
+    this.items().filter((item) => item.type === 'INVESTMENT')
+  );
+
   protected readonly modalTitle = computed(() =>
     this.editing() === 'new' ? 'Nova categoria' : 'Editar categoria'
   );

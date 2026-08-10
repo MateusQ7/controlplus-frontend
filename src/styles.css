@@ -8,6 +8,8 @@
 
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/geist-mono';
+/* só o peso 700: a Poppins é usada exclusivamente no texto da logo */
+@import '@fontsource/poppins/700.css';
 
 @theme {
   --color-ink: #0d0f0e;
@@ -34,6 +36,9 @@
   --color-status-warning: #e8b04b;
   --color-status-exceed: #e05a60;
 
+  /* investimento: azul, para não brigar com o verde da receita nem o vermelho da despesa */
+  --color-invest: #7aa7ee;
+
   /* rampa das barras de categoria: mais forte no maior valor */
   --bar-1: #f2f4f3;
   --bar-2: #b9c0bb;
@@ -42,8 +47,11 @@
 
   /* campo cheio do login e marca da sidebar */
   --input-bg: #171b1a;
-  --mark-bg: #6dcb9b;
-  --mark-fg: #0d0f0e;
+
+  /* campos de formulário: afundados no escuro, brancos com borda no claro */
+  --control-bg: rgba(0, 0, 0, 0.22);
+  --control-edge: rgba(255, 255, 255, 0.12);
+  --modal-shadow: rgba(0, 0, 0, 0.9);
 
   --text-label: 10.5px;
   --text-eyebrow: 11px;
@@ -54,6 +62,15 @@
 
   --font-sans: 'Geist Variable', 'Geist', system-ui, sans-serif;
   --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, monospace;
+  --font-brand: 'Poppins', 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /*
+   * Cores da logo, de control-plus-lockup-escuro.svg. O quadrado é sempre
+   * verde; mudam o texto e o miolo. O par claro está no bloco data-theme.
+   */
+  --logo-text: #ffffff;
+  --logo-square: #10a96b;
+  --logo-bars: #0b1a14;
 }
 
 /*
@@ -85,14 +102,24 @@
   --color-status-warning: #b8801c;
   --color-status-exceed: #d14a42;
 
+  --color-invest: #2a5fb8;
+
   --bar-1: #1b1f23;
   --bar-2: #3f443f;
   --bar-3: #6b706b;
   --bar-4: #9aa09a;
 
   --input-bg: #ffffff;
-  --mark-bg: #16181c;
-  --mark-fg: #6dcb9b;
+
+  /* branco no branco só se lê pela borda, então ela é mais firme que a hairline */
+  --control-bg: #ffffff;
+  --control-edge: #d5d5cf;
+  --modal-shadow: rgba(20, 35, 28, 0.22);
+
+  /* control-plus-lockup-claro.svg: quadrado verde, miolo branco, texto escuro */
+  --logo-text: #14231c;
+  --logo-square: #10a96b;
+  --logo-bars: #ffffff;
 
   /* botão primário preto no claro; no escuro cai no verde da marca */
   --btn-bg: #16181c;
@@ -167,8 +194,13 @@ body {
 }
 
 @layer base {
+  /* sem outline-ring: era ele que pintava de verde o contorno de foco */
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+
+  :focus-visible {
+    outline: none;
   }
   body {
     @apply bg-background text-foreground;
@@ -396,18 +428,26 @@ body {
 .control {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid var(--color-hairline);
+  border: 1px solid var(--control-edge);
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--control-bg);
   color: var(--color-fg);
   font: inherit;
   font-size: var(--text-input);
   outline: none;
-  transition: border-color 0.16s;
+  transition: border-color 0.16s, box-shadow 0.16s;
 }
 
+/* anel no foco: só a borda mudando de cor é discreto demais no claro */
 .control:focus {
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+.control:disabled {
+  background: var(--color-raised);
+  color: var(--color-muted);
+  cursor: not-allowed;
 }
 
 .control[aria-invalid='true'] {
@@ -438,6 +478,26 @@ select.control option {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+/* campo de dinheiro: o R$ é adorno fixo, não faz parte do valor digitado */
+.money {
+  position: relative;
+}
+
+.money > .prefix {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  font-size: var(--text-input);
+  color: var(--color-muted);
+  pointer-events: none;
+}
+
+.money > .control {
+  padding-left: 38px;
+  font-variant-numeric: tabular-nums;
 }
 
 .hint {
@@ -543,9 +603,13 @@ select.control option {
   background: var(--color-status-warning);
 }
 
-.badge[data-status='EXCEED'] .badge-icon,
+.badge[data-status='EXCEEDED'] .badge-icon,
 .badge[data-tone='expense'] .badge-icon {
   background: var(--color-status-exceed);
+}
+
+.badge[data-tone='invest'] .badge-icon {
+  background: var(--color-invest);
 }
 
 /* ---------- trilhos (barra e medidor) ---------- */
@@ -572,7 +636,7 @@ select.control option {
   background: var(--color-status-warning);
 }
 
-.track-fill[data-status='EXCEED'] {
+.track-fill[data-status='EXCEEDED'] {
   background: var(--color-status-exceed);
 }
 
@@ -637,7 +701,3 @@ select.control option {
   }
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
-}

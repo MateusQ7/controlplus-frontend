@@ -47,5 +47,10 @@ function readInitialTheme(): Theme {
         // Sem acesso ao armazenamento: cai na preferência do sistema.
     }
 
+    // matchMedia não existe em jsdom nem em pré-renderização no servidor.
+    if (typeof matchMedia !== 'function') {
+        return 'dark';
+    }
+
     return matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }

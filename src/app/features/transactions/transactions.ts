@@ -16,12 +16,25 @@ import {
   toIsoDate,
 } from '../../core/utils/period';
 import { Modal } from '../../shared/components/modal/modal';
+import { CurrencyMask } from '../../shared/directives/currency-mask';
 
 const PAGE_SIZE = 25;
 
+const TYPE_LABEL: Record<TransactionType, string> = {
+  INCOME: 'Receita',
+  EXPENSE: 'Despesa',
+  INVESTMENT: 'Investimento',
+};
+
+const TYPE_TONE: Record<TransactionType, string> = {
+  INCOME: 'income',
+  EXPENSE: 'expense',
+  INVESTMENT: 'invest',
+};
+
 @Component({
   selector: 'app-transactions',
-  imports: [ReactiveFormsModule, Modal],
+  imports: [ReactiveFormsModule, Modal, CurrencyMask],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css',
 })
@@ -80,6 +93,19 @@ export class Transactions {
 
   protected readonly money = money;
   protected readonly dayLabel = dayLabel;
+
+  protected typeLabel(type: TransactionType): string {
+    return TYPE_LABEL[type];
+  }
+
+  protected typeTone(type: TransactionType): string {
+    return TYPE_TONE[type];
+  }
+
+  /** Só receita entra dinheiro; despesa e aporte saem da conta. */
+  protected typeSign(type: TransactionType): string {
+    return type === 'INCOME' ? '+' : '−';
+  }
 
   constructor() {
     void this.load();

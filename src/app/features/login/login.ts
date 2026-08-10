@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
@@ -6,6 +6,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MarketService } from '../../core/services/market.service';
 import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
 import { MarketSnapshot } from '../../core/models/market';
+
+/** Cada rodada do rodapé dura 45s e traz os números de novo. */
+const ROTATION_MS = 45_000;
 
 @Component({
   selector: 'app-login',
@@ -31,17 +34,50 @@ export class Login {
   /** null até chegar da rede; se falhar, a faixa simplesmente não aparece. */
   protected readonly market$ = signal<MarketSnapshot | null>(null);
 
+  private readonly destroyRef = inject(DestroyRef);
+  private group = 0;
+
   constructor() {
-    void this.loadIndicators();
+    void this.showGroup();
+    this.startRotation();
   }
 
-  private async loadIndicators(): Promise<void> {
+  /**
+   * Troca a rodada do rodapé e busca os números de novo a cada volta. O
+   * intervalo segue rodando com a aba escondida, então checamos: sem isso a
+   * página gastaria requisição para ninguém ver.
+   */
+  private startRotation(): void {
+    const timer = setInterval(() => {
+      if (document.hidden) {
+        return;
+      }
+
+      this.group += 1;
+      void this.showGroup();
+    }, ROTATION_MS);
+
+    this.destroyRef.onDestroy(() => clearInterval(timer));
+  }
+
+  private async showGroup(): Promise<void> {
     // A faixa é decorativa: falhar aqui não pode atrapalhar o login.
     try {
-      this.market$.set(await this.market.getSnapshot());
+      const snapshot = await this.market.getGroup(this.group);
+
+      // Uma rodada que falhou não apaga a anterior — mantém o que estava lá.
+      if (snapshot) {
+        this.market$.set(snapshot);
+      }
     } catch {
-      this.market$.set(null);
+      // Mesmo caso: silencioso, a faixa apenas não muda.
     }
+  }
+
+  /** O sinal vai escrito no texto, não só na cor. */
+  protected changeLabel(change: number): string {
+    const sign = change > 0 ? '+' : '';
+    return `${sign}${change.toFixed(2).replace('.', ',')}%`;
   }
 
   protected async submit(): Promise<void> {

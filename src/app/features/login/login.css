@@ -26,22 +26,26 @@
   border-bottom: 1px solid var(--color-hairline);
 }
 
+/* altura fixa, largura pela proporção do viewBox (546x140) */
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 0.04em;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.035em;
+  display: block;
+  height: 30px;
+  width: auto;
   user-select: none;
 }
 
-.brand svg {
-  width: 0.6em;
-  height: 0.6em;
-  flex: none;
-  /* o "+" usa currentColor: verde claro no escuro, verde escuro no claro */
-  color: var(--color-accent);
+.brand text {
+  font-family: var(--font-brand);
+  font-weight: 700;
+  fill: var(--logo-text);
+}
+
+.brand .sq {
+  fill: var(--logo-square);
+}
+
+.brand .br {
+  fill: var(--logo-bars);
 }
 
 .top-right {
@@ -190,11 +194,6 @@
   transform: rotate(45deg);
 }
 
-.check input:focus-visible + .box {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
 .forgot {
   color: var(--color-accent);
   text-decoration: none;
@@ -299,14 +298,39 @@
   color: var(--color-accent);
 }
 
+/* entrada suave quando a rodada vira */
+.cell {
+  animation: cell-in 0.4s ease both;
+}
+
+@keyframes cell-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
 /* data do próprio dado: IPCA é série mensal, Selic e CDI andam em dia útil */
 .ref {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 5px 0 0;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
   color: var(--color-faint);
   font-variant-numeric: tabular-nums;
+}
+
+/* variação do dia — o sinal está no texto, a cor só reforça */
+.var {
+  color: var(--color-status-ok);
+}
+
+.var.down {
+  color: var(--color-status-exceed);
 }
 
 .source {
@@ -371,5 +395,9 @@
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+
+  .cell {
+    animation: none;
   }
 }

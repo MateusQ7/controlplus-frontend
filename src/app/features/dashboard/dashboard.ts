@@ -23,6 +23,12 @@ const SHORT_DAY = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-d
  */
 const BAR_RAMP = ['var(--bar-1)', 'var(--bar-2)', 'var(--bar-3)', 'var(--bar-4)'];
 
+/** Linhas por página no cartão de lançamentos. */
+const RECENT_PAGE_SIZE = 4;
+
+/** Páginas guardadas; vêm de uma vez com o mês, então virar página não busca. */
+const RECENT_PAGES = 3;
+
 @Component({
   selector: 'app-dashboard',
   imports: [RouterLink],
@@ -78,9 +84,13 @@ export class Dashboard {
     Math.max(0, ...this.expenseByCategory().map((item) => item.total))
   );
 
-  /** Receita e despesa dividem a mesma escala, senão as barras não se comparam. */
+  /** Receita, despesa e investimento dividem a mesma escala, senão as barras não se comparam. */
   private readonly flowScale = computed(() =>
-    Math.max(this.summary()?.totalIncome ?? 0, this.summary()?.totalExpense ?? 0)
+    Math.max(
+      this.summary()?.totalIncome ?? 0,
+      this.summary()?.totalExpense ?? 0,
+      this.summary()?.totalInvested ?? 0
+    )
   );
 
   protected readonly incomeWidth = computed(() =>
@@ -91,10 +101,50 @@ export class Dashboard {
     this.share(this.summary()?.totalExpense ?? 0, this.flowScale())
   );
 
+  protected readonly investedWidth = computed(() =>
+    this.share(this.summary()?.totalInvested ?? 0, this.flowScale())
+  );
+
+  private readonly recentPage = signal(0);
+
+  protected readonly recentPages = computed(() =>
+    Math.max(1, Math.ceil(this.recent().length / RECENT_PAGE_SIZE))
+  );
+
+  /**
+   * A fatia visível, sempre com quatro posições: quando a última página tem
+   * menos lançamentos, as vagas viram null e o template desenha linha vazia.
+   * Sem isso o cartão encolhe ao virar a página e a tela pula.
+   */
+  protected readonly recentSlice = computed(() => {
+    const start = this.recentPage() * RECENT_PAGE_SIZE;
+    const page = this.recent().slice(start, start + RECENT_PAGE_SIZE);
+
+    return Array.from(
+      { length: RECENT_PAGE_SIZE },
+      (_, index): Transaction | null => page[index] ?? null
+    );
+  });
+
+  protected readonly recentLabel = computed(
+    () => `${this.recentPage() + 1} de ${this.recentPages()}`
+  );
+
+  protected readonly onFirstRecent = computed(() => this.recentPage() === 0);
+  protected readonly onLastRecent = computed(
+    () => this.recentPage() >= this.recentPages() - 1
+  );
+
   protected readonly money = money;
 
   constructor() {
     void this.load();
+  }
+
+  protected shiftRecent(offset: number): void {
+    this.recentPage.update((current) =>
+      Math.min(this.recentPages() - 1, Math.max(0, current + offset))
+    );
   }
 
   protected async load(): Promise<void> {
@@ -112,7 +162,12 @@ export class Dashboard {
         this.transactions.getSummary(startDate, endDate),
         this.transactions.getSummaryByCategory('EXPENSE', startDate, endDate),
         this.budgets.getByMonth(toIsoMonth(month)),
-        this.transactions.getByPeriod(startDate, endDate, 0, 5),
+        this.transactions.getByPeriod(
+          startDate,
+          endDate,
+          0,
+          RECENT_PAGE_SIZE * RECENT_PAGES
+        ),
         // O mês anterior só alimenta a variação: se falhar, o resto continua.
         this.transactions
           .getSummary(toIsoDate(before), toIsoDate(endOfMonth(before)))
@@ -123,6 +178,8 @@ export class Dashboard {
       this.expenseByCategory.set([...byCategory].sort((a, b) => b.total - a.total));
       this.monthBudgets.set(budgets);
       this.recent.set(page.content);
+      // Mês novo, lista nova: manter a página antiga poderia cair no vazio.
+      this.recentPage.set(0);
       this.previous.set(previous);
     } catch (error) {
       this.errorMessage.set(messageFor(error, 'Não foi possível carregar os dados do mês.'));

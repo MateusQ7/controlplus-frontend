@@ -23,6 +23,7 @@ export interface Summary {
   endDate: string;
   totalIncome: number;
   totalExpense: number;
+  totalInvested: number;
   balance: number;
 }
 

@@ -13,10 +13,11 @@ import {
   toIsoMonth,
 } from '../../core/utils/period';
 import { Modal } from '../../shared/components/modal/modal';
+import { CurrencyMask } from '../../shared/directives/currency-mask';
 
 @Component({
   selector: 'app-budgets',
-  imports: [ReactiveFormsModule, Modal],
+  imports: [ReactiveFormsModule, Modal, CurrencyMask],
   templateUrl: './budgets.html',
   styleUrl: './budgets.css',
 })
@@ -202,7 +203,7 @@ export class Budgets {
         return 'No limite';
       case 'WARNING':
         return 'Atenção';
-      case 'EXCEED':
+      case 'EXCEEDED':
         return 'Estourado';
     }
   }

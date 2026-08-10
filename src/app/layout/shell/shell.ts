@@ -24,13 +24,15 @@ export class Shell {
   protected readonly user = this.auth.user;
   protected readonly menuOpen = signal(false);
 
-  /** Primeira letra do e-mail — o backend não expõe nome de usuário. */
-  protected readonly initial = computed(() => this.user()?.trim().charAt(0) || '?');
+  protected readonly initial = computed(
+    () => this.user()?.name?.trim().charAt(0) || '?'
+  );
 
   protected readonly nav: NavItem[] = [
     { path: '/dashboard', label: 'Visão geral', source: '/transactions/summary' },
     { path: '/lancamentos', label: 'Lançamentos', source: '/transactions/period' },
     { path: '/orcamentos', label: 'Orçamentos', source: '/budgets' },
+    { path: '/investimentos', label: 'Investimentos', source: '/investments/projection' },
     { path: '/categorias', label: 'Categorias', source: '/categories' },
   ];
 

@@ -7,7 +7,8 @@
         @if (loading()) {
           Carregando…
         } @else {
-          {{ income().length }} de receita · {{ expense().length }} de despesa.
+          {{ income().length }} de receita · {{ expense().length }} de despesa ·
+          {{ investment().length }} de investimento.
         }
       </p>
     </div>
@@ -91,6 +92,35 @@
           + Adicionar despesa
         </button>
       </section>
+
+      <section class="card" aria-labelledby="inv-title">
+        <div class="card-head">
+          <h2 class="card-title" id="inv-title">Investimento</h2>
+          <span class="badge" data-tone="invest">
+            <i class="badge-icon" aria-hidden="true"></i>{{ investment().length }}
+          </span>
+        </div>
+
+        @if (investment().length === 0) {
+          <p class="empty">Nenhuma categoria de investimento.</p>
+        } @else {
+          <ul class="rows">
+            @for (item of investment(); track item.id) {
+              <li class="row">
+                <span class="row-name">{{ item.name }}</span>
+                <button type="button" class="icon" (click)="openEdit(item)"
+                        [attr.aria-label]="'Editar ' + item.name">Editar</button>
+                <button type="button" class="icon danger" (click)="askRemove(item)"
+                        [attr.aria-label]="'Excluir ' + item.name">Excluir</button>
+              </li>
+            }
+          </ul>
+        }
+
+        <button type="button" class="btn btn-ghost add" (click)="openNew('INVESTMENT')">
+          + Adicionar investimento
+        </button>
+      </section>
     </div>
   }
 </div>
@@ -114,6 +144,7 @@
         <select id="cat-type" class="control" formControlName="type">
           <option value="EXPENSE">Despesa</option>
           <option value="INCOME">Receita</option>
+          <option value="INVESTMENT">Investimento</option>
         </select>
       </div>
 

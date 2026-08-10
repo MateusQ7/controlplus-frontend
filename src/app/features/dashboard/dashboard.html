@@ -75,6 +75,18 @@
         </div>
       }
     </div>
+
+    <div class="card tile">
+      <p class="eyebrow"><i class="dot dot-invest" aria-hidden="true"></i>Investido</p>
+      @if (loading()) {
+        <div class="skeleton skeleton-tile"></div>
+      } @else {
+        <p class="tile-value">{{ money(summary()?.totalInvested) }}</p>
+        <div class="track flow">
+          <div class="track-fill" data-flow="invest" [style.width]="investedWidth()"></div>
+        </div>
+      }
+    </div>
   </section>
 
   <div class="grid">
@@ -157,18 +169,33 @@
           </tr>
         </thead>
         <tbody>
-          @for (item of recent(); track item.id) {
+          @for (item of recentSlice(); track $index) {
             <tr>
-              <td>{{ item.description }}</td>
-              <td class="dim hide-narrow">{{ item.category.name }}</td>
-              <td class="dim hide-narrow nowrap">{{ shortDay(item.date) }}</td>
-              <td class="num" [attr.data-type]="item.type">
-                {{ item.type === 'EXPENSE' ? '−' : '+' }} {{ money(item.amount) }}
-              </td>
+              @if (item) {
+                <td>{{ item.description }}</td>
+                <td class="dim hide-narrow">{{ item.category.name }}</td>
+                <td class="dim hide-narrow nowrap">{{ shortDay(item.date) }}</td>
+                <td class="num" [attr.data-type]="item.type">
+                  {{ item.type === 'INCOME' ? '+' : '−' }} {{ money(item.amount) }}
+                </td>
+              } @else {
+                <!-- vaga da última página: segura a altura do cartão -->
+                <td class="blank" colspan="4" aria-hidden="true"></td>
+              }
             </tr>
           }
         </tbody>
       </table>
+
+      @if (recentPages() > 1) {
+        <nav class="pager" aria-label="Paginação dos lançamentos">
+          <button type="button" class="btn btn-ghost" (click)="shiftRecent(-1)"
+                  [disabled]="onFirstRecent()">Anterior</button>
+          <span class="page-count">{{ recentLabel() }}</span>
+          <button type="button" class="btn btn-ghost" (click)="shiftRecent(1)"
+                  [disabled]="onLastRecent()">Próxima</button>
+        </nav>
+      }
     }
   </section>
 </div>
