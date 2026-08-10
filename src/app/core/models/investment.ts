@@ -4,9 +4,13 @@
  */
 export type IndexType = 'CDI' | 'SELIC' | 'IPCA' | 'FIXED';
 
+/** Aporte põe dinheiro na posição; resgate tira. O valor é sempre positivo. */
+export type MovementType = 'CONTRIBUTION' | 'WITHDRAWAL';
+
 export interface Investment {
   id: number;
   name: string;
+  /** Valor de abertura, na data da aplicação. */
   principal: number;
   /** yyyy-MM-dd */
   investedAt: string;
@@ -20,6 +24,14 @@ export interface Investment {
   taxable: boolean;
   /** Pronto do backend, ex.: "120% do CDI". */
   rateLabel: string;
+  /** Aportes já feitos até hoje; os datados à frente ficam de fora. */
+  totalContributed: number;
+  /** Resgates já feitos até hoje. */
+  totalWithdrawn: number;
+  /** principal + totalContributed - totalWithdrawn. */
+  netInvested: number;
+  /** Movimentações cadastradas, incluindo as com data futura. */
+  movementCount: number;
 }
 
 export interface InvestmentRequest {
@@ -33,14 +45,35 @@ export interface InvestmentRequest {
   taxable: boolean;
 }
 
+export interface InvestmentMovement {
+  id: number;
+  investmentId: number;
+  type: MovementType;
+  amount: number;
+  /** yyyy-MM-dd */
+  occurredAt: string;
+  note: string | null;
+}
+
+export interface InvestmentMovementRequest {
+  type: MovementType;
+  amount: number;
+  occurredAt: string;
+  note: string | null;
+}
+
 export interface ProjectionMonth {
   /** yyyy-MM */
   referenceMonth: string;
   grossBalance: number;
+  /** Rendimento ainda dentro da posição; um resgate leva a parte dele que sai. */
   grossEarnings: number;
   incomeTax: number;
   netBalance: number;
+  /** Ganho do mês já sem os aportes e resgates do período. */
   netEarningsInMonth: number;
+  /** Aplicado e não resgatado até o fim do mês. */
+  netInvested: number;
 }
 
 export interface InvestmentProjection {
@@ -56,14 +89,15 @@ export interface InvestmentProjection {
   indexStale: boolean;
   effectiveAnnualPercent: number;
   effectiveMonthlyPercent: number;
-  principal: number;
+  /** Abertura mais aportes menos resgates, na data de hoje. */
+  netInvested: number;
   currentGrossBalance: number;
   currentNetBalance: number;
   months: ProjectionMonth[];
 }
 
 export interface PortfolioProjection {
-  totalPrincipal: number;
+  totalNetInvested: number;
   currentGrossBalance: number;
   currentNetBalance: number;
   totals: ProjectionMonth[];

@@ -4,6 +4,8 @@ import { firstValueFrom } from "rxjs";
 import { environment } from "../../../environments/environment";
 import {
     Investment,
+    InvestmentMovement,
+    InvestmentMovementRequest,
     InvestmentProjection,
     InvestmentRequest,
     PortfolioProjection,
@@ -28,6 +30,48 @@ export class InvestmentService {
 
     async delete(id: number): Promise<void> {
         await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
+    }
+
+    /**
+     * Aportes e resgates de uma posição. O backend recusa o resgate maior que o saldo
+     * da data e a movimentação fora da vida do papel — a tela mostra a mensagem dele.
+     */
+    async getMovements(investmentId: number): Promise<InvestmentMovement[]> {
+        return firstValueFrom(
+            this.http.get<InvestmentMovement[]>(this.movementsUrl(investmentId))
+        );
+    }
+
+    async addMovement(
+        investmentId: number,
+        request: InvestmentMovementRequest,
+    ): Promise<InvestmentMovement> {
+        return firstValueFrom(
+            this.http.post<InvestmentMovement>(this.movementsUrl(investmentId), request)
+        );
+    }
+
+    async updateMovement(
+        investmentId: number,
+        movementId: number,
+        request: InvestmentMovementRequest,
+    ): Promise<InvestmentMovement> {
+        return firstValueFrom(
+            this.http.put<InvestmentMovement>(
+                `${this.movementsUrl(investmentId)}/${movementId}`,
+                request,
+            )
+        );
+    }
+
+    async deleteMovement(investmentId: number, movementId: number): Promise<void> {
+        await firstValueFrom(
+            this.http.delete<void>(`${this.movementsUrl(investmentId)}/${movementId}`)
+        );
+    }
+
+    private movementsUrl(investmentId: number): string {
+        return `${this.apiUrl}/${investmentId}/movements`;
     }
 
     /**

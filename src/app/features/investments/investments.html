@@ -7,7 +7,7 @@
         @if (loading()) {
           Buscando a carteira…
         } @else if (items().length > 0) {
-          {{ money(projection()?.totalPrincipal) }} aplicados em
+          {{ money(projection()?.totalNetInvested) }} aplicados em
           {{ items().length }} {{ items().length === 1 ? 'posição' : 'posições' }}.
         } @else {
           Cadastre um papel para ver a projeção.
@@ -57,7 +57,7 @@
 
       <div class="card tile">
         <p class="eyebrow">Aplicado</p>
-        <p class="tile-value">{{ money(projection()?.totalPrincipal) }}</p>
+        <p class="tile-value">{{ money(projection()?.totalNetInvested) }}</p>
       </div>
 
       <div class="card tile">
@@ -67,7 +67,10 @@
 
       <div class="card tile">
         <p class="eyebrow">Ganho no período</p>
-        <p class="tile-value gain">+ {{ money(projectedGain()) }}</p>
+        <p class="tile-value" [class.gain]="(projectedGain() ?? 0) >= 0"
+           [class.loss]="(projectedGain() ?? 0) < 0">
+          {{ (projectedGain() ?? 0) < 0 ? '−' : '+' }} {{ money(abs(projectedGain() ?? 0)) }}
+        </p>
       </div>
     </section>
 
@@ -165,9 +168,20 @@
 
           <p class="position-figure">{{ money(row.projection?.currentNetBalance) }}</p>
           <p class="position-of">
-            aplicou {{ money(row.investment.principal) }} em
+            {{ money(row.investment.netInvested) }} aplicados desde
             {{ dayLabel(row.investment.investedAt) }}
           </p>
+
+          @if (row.investment.movementCount > 0) {
+            <p class="position-flows">
+              @if (row.investment.totalContributed > 0) {
+                <span class="flow-in">+ {{ money(row.investment.totalContributed) }} em aportes</span>
+              }
+              @if (row.investment.totalWithdrawn > 0) {
+                <span class="flow-out">− {{ money(row.investment.totalWithdrawn) }} em resgates</span>
+              }
+            </p>
+          }
 
           <dl class="position-foot">
             <div>
@@ -191,6 +205,13 @@
           </dl>
 
           <div class="position-actions">
+            <button type="button" class="icon flows" (click)="openMovements(row.investment)"
+                    [attr.aria-label]="'Aportes e resgates de ' + row.investment.name">
+              Aportes e resgates
+              @if (row.investment.movementCount > 0) {
+                <span class="count">{{ row.investment.movementCount }}</span>
+              }
+            </button>
             <button type="button" class="icon" (click)="openEdit(row.investment)"
                     [attr.aria-label]="'Editar ' + row.investment.name">Editar</button>
             <button type="button" class="icon danger" (click)="askRemove(row.investment)"
@@ -209,6 +230,7 @@
           <thead>
             <tr>
               <th scope="col">Mês</th>
+              <th scope="col" class="num hide-narrow">Aplicado</th>
               <th scope="col" class="num hide-narrow">Bruto</th>
               <th scope="col" class="num hide-narrow">IR</th>
               <th scope="col" class="num">Líquido</th>
@@ -219,10 +241,15 @@
             @for (month of totals(); track month.referenceMonth) {
               <tr>
                 <td class="nowrap">{{ longMonth(month.referenceMonth) }}</td>
+                <td class="num dim hide-narrow">{{ money(month.netInvested) }}</td>
                 <td class="num dim hide-narrow">{{ money(month.grossBalance) }}</td>
                 <td class="num dim hide-narrow">{{ money(month.incomeTax) }}</td>
                 <td class="num">{{ money(month.netBalance) }}</td>
-                <td class="num gain">+ {{ money(month.netEarningsInMonth) }}</td>
+                <td class="num" [class.gain]="month.netEarningsInMonth >= 0"
+                    [class.loss]="month.netEarningsInMonth < 0">
+                  {{ month.netEarningsInMonth < 0 ? '−' : '+' }}
+                  {{ money(abs(month.netEarningsInMonth)) }}
+                </td>
               </tr>
             }
           </tbody>
@@ -338,12 +365,132 @@
   </app-modal>
 }
 
+<!-- ---------- aportes e resgates ---------- -->
+@if (managing(); as target) {
+  <app-modal [heading]="'Aportes e resgates · ' + target.name" (closed)="closeMovements()">
+
+    <p class="note">
+      Cada aporte rende a partir da própria data e cada resgate leva junto a fatia de
+      rendimento que já era dele. Datas à frente entram como movimentação planejada.
+    </p>
+
+    @if (movementsLoading()) {
+      <div class="skeleton skeleton-block"></div>
+    } @else if (movements().length === 0) {
+      <p class="empty">
+        Só a aplicação inicial de {{ money(target.principal) }} em
+        {{ dayLabel(target.investedAt) }}.
+      </p>
+    } @else {
+      <ul class="movements">
+        @for (movement of movements(); track movement.id) {
+          <li class="movement">
+            <div class="movement-main">
+              <p class="movement-amount"
+                 [class.flow-in]="movement.type === 'CONTRIBUTION'"
+                 [class.flow-out]="movement.type === 'WITHDRAWAL'">
+                {{ movement.type === 'WITHDRAWAL' ? '−' : '+' }} {{ money(movement.amount) }}
+              </p>
+              <p class="movement-meta">
+                {{ movementLabel(movement.type) }} · {{ dayLabel(movement.occurredAt) }}
+                @if (movement.note) {
+                  <span class="movement-note">{{ movement.note }}</span>
+                }
+              </p>
+            </div>
+
+            @if (removingMovement() === movement) {
+              <div class="movement-actions">
+                <button type="button" class="icon" (click)="cancelRemoveMovement()">Cancelar</button>
+                <button type="button" class="icon danger" [disabled]="saving()"
+                        (click)="confirmRemoveMovement()">
+                  {{ saving() ? 'Excluindo…' : 'Confirmar' }}
+                </button>
+              </div>
+            } @else {
+              <div class="movement-actions">
+                <button type="button" class="icon" (click)="editMovement(movement)"
+                        [attr.aria-label]="'Editar movimentação de ' + dayLabel(movement.occurredAt)">
+                  Editar
+                </button>
+                <button type="button" class="icon danger" (click)="askRemoveMovement(movement)"
+                        [attr.aria-label]="'Excluir movimentação de ' + dayLabel(movement.occurredAt)">
+                  Excluir
+                </button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    <form [formGroup]="movementForm" (ngSubmit)="saveMovement()" novalidate class="movement-form">
+      <h3 class="form-title">
+        {{ isNewMovement() ? 'Nova movimentação' : 'Editar movimentação' }}
+      </h3>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="mov-type">Tipo</label>
+          <select id="mov-type" class="control" formControlName="type">
+            @for (option of movementTypes; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="mov-date">Data</label>
+          <input id="mov-date" class="control" type="date" formControlName="occurredAt"
+                 [attr.aria-invalid]="invalidMovement('occurredAt') || null" />
+          @if (invalidMovement('occurredAt')) {
+            <p class="hint">Informe a data.</p>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="mov-amount">Valor</label>
+        <div class="money">
+          <span class="prefix" aria-hidden="true">R$</span>
+          <input id="mov-amount" class="control" type="text" appCurrency
+                 formControlName="amount" placeholder="0,00"
+                 [attr.aria-invalid]="invalidMovement('amount') || null" />
+        </div>
+        @if (invalidMovement('amount')) {
+          <p class="hint">Informe um valor maior que zero.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="mov-note">Observação</label>
+        <input id="mov-note" class="control" type="text" formControlName="note"
+               maxlength="120" placeholder="Opcional" />
+      </div>
+
+      @if (movementError(); as message) {
+        <p class="hint" role="alert">{{ message }}</p>
+      }
+
+      <div class="form-actions">
+        @if (!isNewMovement()) {
+          <button type="button" class="btn btn-ghost" (click)="startMovement()">Cancelar</button>
+        }
+        <button type="submit" class="btn" [disabled]="saving()">
+          {{ saving() ? 'Salvando…' : isNewMovement() ? 'Adicionar' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}
+
 <!-- ---------- excluir ---------- -->
 @if (removing(); as target) {
   <app-modal heading="Excluir investimento" (closed)="cancelRemove()">
     <p class="note">
       Excluir <strong>{{ target.name }}</strong>? A projeção da carteira é recalculada sem
-      ele. Os lançamentos continuam intactos.
+      ele, e os aportes e resgates registrados nessa posição saem junto. Os lançamentos
+      continuam intactos.
     </p>
 
     @if (formError(); as message) {

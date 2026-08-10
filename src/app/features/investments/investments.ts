@@ -5,7 +5,9 @@ import { InvestmentService } from '../../core/services/investment.service';
 import {
   IndexType,
   Investment,
+  InvestmentMovement,
   InvestmentProjection,
+  MovementType,
   PortfolioProjection,
   ProjectionMonth,
 } from '../../core/models/investment';
@@ -25,6 +27,11 @@ const INDEX_TYPES: readonly { value: IndexType; label: string }[] = [
   { value: 'SELIC', label: 'Selic' },
   { value: 'IPCA', label: 'IPCA' },
   { value: 'FIXED', label: 'Prefixado' },
+];
+
+const MOVEMENT_TYPES: readonly { value: MovementType; label: string }[] = [
+  { value: 'CONTRIBUTION', label: 'Aporte' },
+  { value: 'WITHDRAWAL', label: 'Resgate' },
 ];
 
 /** Linha do gráfico: 100x40 unidades, esticadas pelo CSS. */
@@ -84,9 +91,22 @@ export class Investments {
   /** Espelha o índice escolhido no formulário para o template trocar os campos. */
   protected readonly selectedIndex = signal<IndexType>('CDI');
 
+  /** Posição com o painel de aportes e resgates aberto. */
+  protected readonly managing = signal<Investment | null>(null);
+  protected readonly movements = signal<InvestmentMovement[]>([]);
+  protected readonly movementsLoading = signal(false);
+  protected readonly editingMovement = signal<InvestmentMovement | 'new' | null>(null);
+  protected readonly removingMovement = signal<InvestmentMovement | null>(null);
+  protected readonly movementError = signal<string | null>(null);
+  /** Mexer nas movimentações muda os saldos, então a carteira é recarregada ao sair. */
+  private movementsChanged = false;
+
   protected readonly horizons = HORIZONS;
   protected readonly indexTypes = INDEX_TYPES;
+  protected readonly movementTypes = MOVEMENT_TYPES;
   protected readonly money = money;
+  /** Um resgate pode deixar o resultado do período negativo; o sinal fica no template. */
+  protected readonly abs = Math.abs;
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
@@ -99,7 +119,16 @@ export class Investments {
     taxable: [true],
   });
 
+  protected readonly movementForm = this.fb.nonNullable.group({
+    type: ['CONTRIBUTION' as MovementType, [Validators.required]],
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
+    occurredAt: [toIsoDate(new Date()), [Validators.required]],
+    note: [''],
+  });
+
   protected readonly isNew = computed(() => this.editing() === 'new');
+
+  protected readonly isNewMovement = computed(() => this.editingMovement() === 'new');
 
   /** Cada cartão precisa do investimento cru (para editar) e da projeção (para os números). */
   protected readonly rows = computed<InvestmentRow[]>(() => {
@@ -176,8 +205,8 @@ export class Investments {
     const gross = totals.map((month) => month.grossBalance);
     const net = totals.map((month) => month.netBalance);
 
-    // O principal entra na escala para a curva ser lida como crescimento sobre o aplicado.
-    const min = Math.min(...net, this.projection()?.totalPrincipal ?? 0);
+    // O aplicado entra na escala para a curva ser lida como crescimento sobre ele.
+    const min = Math.min(...net, this.projection()?.totalNetInvested ?? 0);
     const max = Math.max(...gross);
 
     const netPath = this.pathOf(net, min, max);
@@ -351,6 +380,164 @@ export class Investments {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  protected async openMovements(investment: Investment): Promise<void> {
+    this.managing.set(investment);
+    this.movements.set([]);
+    this.movementError.set(null);
+    this.removingMovement.set(null);
+    this.movementsChanged = false;
+    this.startMovement();
+
+    this.movementsLoading.set(true);
+
+    try {
+      this.movements.set(await this.investments.getMovements(investment.id));
+    } catch (error) {
+      this.movementError.set(
+        messageFor(error, 'Não foi possível carregar as movimentações.')
+      );
+    } finally {
+      this.movementsLoading.set(false);
+    }
+  }
+
+  protected async closeMovements(): Promise<void> {
+    this.managing.set(null);
+    this.editingMovement.set(null);
+    this.removingMovement.set(null);
+
+    if (this.movementsChanged) {
+      this.movementsChanged = false;
+      await this.load();
+    }
+  }
+
+  /** Volta o formulário para o modo de inclusão, que é como o painel abre. */
+  protected startMovement(): void {
+    const investment = this.managing();
+
+    this.movementForm.reset({
+      type: 'CONTRIBUTION',
+      // A data de hoje só serve se a posição já existir; senão vale a de abertura.
+      occurredAt: this.defaultMovementDate(investment),
+      amount: null,
+      note: '',
+    });
+    this.editingMovement.set('new');
+  }
+
+  protected editMovement(movement: InvestmentMovement): void {
+    this.movementForm.reset({
+      type: movement.type,
+      amount: movement.amount,
+      occurredAt: movement.occurredAt,
+      note: movement.note ?? '',
+    });
+    this.movementError.set(null);
+    this.removingMovement.set(null);
+    this.editingMovement.set(movement);
+  }
+
+  protected async saveMovement(): Promise<void> {
+    const investment = this.managing();
+    const target = this.editingMovement();
+
+    if (!investment || !target || this.saving()) {
+      return;
+    }
+
+    if (this.movementForm.invalid) {
+      this.movementForm.markAllAsTouched();
+      return;
+    }
+
+    this.saving.set(true);
+    this.movementError.set(null);
+
+    const raw = this.movementForm.getRawValue();
+    const request = {
+      type: raw.type,
+      amount: raw.amount!,
+      occurredAt: raw.occurredAt,
+      note: raw.note.trim() || null,
+    };
+
+    try {
+      if (target === 'new') {
+        await this.investments.addMovement(investment.id, request);
+      } else {
+        await this.investments.updateMovement(investment.id, target.id, request);
+      }
+
+      await this.reloadMovements(investment);
+      this.startMovement();
+    } catch (error) {
+      this.movementError.set(
+        messageFor(error, 'Não foi possível salvar a movimentação.')
+      );
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  protected askRemoveMovement(movement: InvestmentMovement): void {
+    this.movementError.set(null);
+    this.removingMovement.set(movement);
+  }
+
+  protected cancelRemoveMovement(): void {
+    this.removingMovement.set(null);
+  }
+
+  protected async confirmRemoveMovement(): Promise<void> {
+    const investment = this.managing();
+    const target = this.removingMovement();
+
+    if (!investment || !target || this.saving()) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.movementError.set(null);
+
+    try {
+      await this.investments.deleteMovement(investment.id, target.id);
+      this.removingMovement.set(null);
+
+      await this.reloadMovements(investment);
+
+      if (this.editingMovement() === target) {
+        this.startMovement();
+      }
+    } catch (error) {
+      this.movementError.set(
+        messageFor(error, 'Não foi possível excluir a movimentação.')
+      );
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  protected movementLabel(type: MovementType): string {
+    return type === 'CONTRIBUTION' ? 'Aporte' : 'Resgate';
+  }
+
+  protected invalidMovement(field: 'amount' | 'occurredAt'): boolean {
+    const control = this.movementForm.controls[field];
+    return control.invalid && control.touched;
+  }
+
+  private async reloadMovements(investment: Investment): Promise<void> {
+    this.movementsChanged = true;
+    this.movements.set(await this.investments.getMovements(investment.id));
+  }
+
+  private defaultMovementDate(investment: Investment | null): string {
+    const today = toIsoDate(new Date());
+
+    return investment && investment.investedAt > today ? investment.investedAt : today;
   }
 
   protected isPercentageOfIndex(type: IndexType): boolean {
