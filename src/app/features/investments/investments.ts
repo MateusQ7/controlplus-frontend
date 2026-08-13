@@ -19,7 +19,6 @@ const SHORT_MONTH = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: '2-
 const LONG_MONTH = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
 const DAY = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-/** Horizontes oferecidos. O backend aceita de 1 a 360 meses. */
 const HORIZONS = [6, 12, 24, 36] as const;
 
 const INDEX_TYPES: readonly { value: IndexType; label: string }[] = [
@@ -34,7 +33,6 @@ const MOVEMENT_TYPES: readonly { value: MovementType; label: string }[] = [
   { value: 'WITHDRAWAL', label: 'Resgate' },
 ];
 
-/** Linha do gráfico: 100x40 unidades, esticadas pelo CSS. */
 const CHART_WIDTH = 100;
 const CHART_HEIGHT = 40;
 const CHART_TOP = 2;
@@ -45,7 +43,6 @@ interface InvestmentRow {
   projection: InvestmentProjection | null;
 }
 
-/** De onde saiu cada taxa usada na projeção, para a tela poder datar o número. */
 interface IndexSource {
   label: string;
   annual: string;
@@ -76,7 +73,6 @@ export class Investments {
 
   protected readonly loading = signal(true);
   protected readonly errorMessage = signal<string | null>(null);
-  /** A projeção falha sozinha quando o índice está indisponível; a lista continua. */
   protected readonly projectionError = signal<string | null>(null);
 
   protected readonly items = signal<Investment[]>([]);
@@ -88,24 +84,20 @@ export class Investments {
   protected readonly saving = signal(false);
   protected readonly formError = signal<string | null>(null);
 
-  /** Espelha o índice escolhido no formulário para o template trocar os campos. */
   protected readonly selectedIndex = signal<IndexType>('CDI');
 
-  /** Posição com o painel de aportes e resgates aberto. */
   protected readonly managing = signal<Investment | null>(null);
   protected readonly movements = signal<InvestmentMovement[]>([]);
   protected readonly movementsLoading = signal(false);
   protected readonly editingMovement = signal<InvestmentMovement | 'new' | null>(null);
   protected readonly removingMovement = signal<InvestmentMovement | null>(null);
   protected readonly movementError = signal<string | null>(null);
-  /** Mexer nas movimentações muda os saldos, então a carteira é recarregada ao sair. */
   private movementsChanged = false;
 
   protected readonly horizons = HORIZONS;
   protected readonly indexTypes = INDEX_TYPES;
   protected readonly movementTypes = MOVEMENT_TYPES;
   protected readonly money = money;
-  /** Um resgate pode deixar o resultado do período negativo; o sinal fica no template. */
   protected readonly abs = Math.abs;
 
   protected readonly form = this.fb.nonNullable.group({
@@ -130,7 +122,6 @@ export class Investments {
 
   protected readonly isNewMovement = computed(() => this.editingMovement() === 'new');
 
-  /** Cada cartão precisa do investimento cru (para editar) e da projeção (para os números). */
   protected readonly rows = computed<InvestmentRow[]>(() => {
     const byId = new Map(
       (this.projection()?.investments ?? []).map((item) => [item.investmentId, item])
@@ -146,7 +137,6 @@ export class Investments {
     () => this.projection()?.totals ?? []
   );
 
-  /** Último mês do horizonte: é o número que resume a projeção. */
   protected readonly finalMonth = computed<ProjectionMonth | null>(() => {
     const totals = this.totals();
     return totals.length > 0 ? totals[totals.length - 1] : null;
@@ -159,17 +149,11 @@ export class Investments {
     return current === undefined || final === undefined ? null : final - current;
   });
 
-  /**
-   * Um item por indexador em uso, com a data a que a taxa se refere. O SGS publica
-   * com atraso de um ou dois dias úteis, então "hoje" e "referência" quase nunca
-   * coincidem — sem a data não dá para saber de quando é o número.
-   */
   protected readonly indexSources = computed<IndexSource[]>(() => {
     const found = new Map<IndexType, IndexSource>();
 
     for (const item of this.projection()?.investments ?? []) {
       if (item.indexAnnualPercent === null || item.indexReferenceDate === null) {
-        // Prefixado não tem índice para datar.
         continue;
       }
 
@@ -187,10 +171,6 @@ export class Investments {
     return [...found.values()];
   });
 
-  /**
-   * Marca que algum índice veio do último valor guardado em vez de uma consulta
-   * nova — os números continuam válidos, só estão apoiados em taxa mais antiga.
-   */
   protected readonly hasStaleIndex = computed(() =>
     this.indexSources().some((source) => source.stale)
   );
@@ -205,7 +185,6 @@ export class Investments {
     const gross = totals.map((month) => month.grossBalance);
     const net = totals.map((month) => month.netBalance);
 
-    // O aplicado entra na escala para a curva ser lida como crescimento sobre ele.
     const min = Math.min(...net, this.projection()?.totalNetInvested ?? 0);
     const max = Math.max(...gross);
 
@@ -223,7 +202,6 @@ export class Investments {
   });
 
   constructor() {
-    // O par de campos de taxa muda com o índice; validar o campo errado travaria o envio.
     this.form.controls.indexType.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe((type) => this.applyRateRules(type));
@@ -325,7 +303,6 @@ export class Investments {
     const percentageOfIndex = this.isPercentageOfIndex(raw.indexType);
     const target = this.editing();
 
-    // O backend recusa o campo que não pertence ao índice, então ele vai nulo.
     const request = {
       name: raw.name.trim(),
       principal: raw.principal!,
@@ -414,13 +391,11 @@ export class Investments {
     }
   }
 
-  /** Volta o formulário para o modo de inclusão, que é como o painel abre. */
   protected startMovement(): void {
     const investment = this.managing();
 
     this.movementForm.reset({
       type: 'CONTRIBUTION',
-      // A data de hoje só serve se a posição já existir; senão vale a de abertura.
       occurredAt: this.defaultMovementDate(investment),
       amount: null,
       note: '',
@@ -544,7 +519,6 @@ export class Investments {
     return type === 'CDI' || type === 'SELIC';
   }
 
-  /** Rótulo do campo de taxa livre: em IPCA é acréscimo, em prefixado é a taxa toda. */
   protected spreadLabel(): string {
     return this.selectedIndex() === 'IPCA' ? 'Taxa acima do IPCA' : 'Taxa anual';
   }
@@ -592,7 +566,6 @@ export class Investments {
     unused.updateValueAndValidity({ emitEvent: false });
   }
 
-  /** Curva em coordenadas do viewBox, do primeiro ao último mês. */
   private pathOf(values: number[], min: number, max: number): string {
     const span = max - min || 1;
     const usableHeight = CHART_BOTTOM - CHART_TOP;

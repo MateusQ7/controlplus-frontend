@@ -69,7 +69,6 @@ export class Transactions {
     categoryId: [null as number | null, [Validators.required]],
   });
 
-  /** Acompanha o tipo escolhido para filtrar o select de categoria. */
   private readonly selectedType = toSignal(this.form.controls.type.valueChanges, {
     initialValue: this.form.controls.type.value,
   });
@@ -102,7 +101,6 @@ export class Transactions {
     return TYPE_TONE[type];
   }
 
-  /** Só receita entra dinheiro; despesa e aporte saem da conta. */
   protected typeSign(type: TransactionType): string {
     return type === 'INCOME' ? '+' : '−';
   }
@@ -142,8 +140,7 @@ export class Transactions {
       const result = await this.categories.getAll();
       this.allCategories.set([...result].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')));
     } catch {
-      // A lista já mostra o erro do período; aqui o formulário avisa sozinho
-      // quando não houver categoria para escolher.
+      return
     }
   }
 
@@ -164,7 +161,6 @@ export class Transactions {
   }
 
   protected openNew(): void {
-    // Novo lançamento cai no mês em foco, não no dia de hoje.
     const month = this.referenceMonth();
     const today = new Date();
     const sameMonth = startOfMonth(today).getTime() === month.getTime();
@@ -196,7 +192,6 @@ export class Transactions {
     this.editing.set(null);
   }
 
-  /** Trocar o tipo invalida a categoria escolhida — ela pertence ao outro grupo. */
   protected onTypeChange(): void {
     this.form.controls.categoryId.setValue(null);
   }
@@ -263,7 +258,6 @@ export class Transactions {
       await this.transactions.delete(target.id);
       this.removing.set(null);
 
-      // Apagar o último item de uma página faz ela deixar de existir.
       if (this.items().length === 1 && this.page() > 0) {
         this.page.update((current) => current - 1);
       }

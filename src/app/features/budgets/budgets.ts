@@ -54,7 +54,6 @@ export class Budgets {
     this.items().reduce((sum, budget) => sum + budget.spentAmount, 0)
   );
 
-  /** Uma categoria só pode ter um orçamento por mês — as já usadas saem da lista. */
   protected readonly availableCategories = computed(() => {
     const taken = new Set(this.items().map((budget) => budget.category.id));
     return this.expenseCategories().filter((category) => !taken.has(category.id));
@@ -80,7 +79,6 @@ export class Budgets {
 
     try {
       const result = await this.budgets.getByMonth(toIsoMonth(this.referenceMonth()));
-      // Estourados primeiro — é o que exige ação.
       this.items.set([...result].sort((a, b) => b.usagePercentage - a.usagePercentage));
     } catch (error) {
       this.errorMessage.set(messageFor(error, 'Não foi possível carregar os orçamentos.'));
@@ -98,7 +96,7 @@ export class Budgets {
           .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
       );
     } catch {
-      // O formulário avisa sozinho quando não há categoria disponível.
+      return;
     }
   }
 
@@ -117,7 +115,6 @@ export class Budgets {
 
   protected openEdit(budget: Budget): void {
     this.form.reset({ categoryId: budget.category.id, limitAmount: budget.limitAmount });
-    // O backend só aceita novo limite; categoria e mês são imutáveis.
     this.form.controls.categoryId.disable();
     this.formError.set(null);
     this.editing.set(budget);

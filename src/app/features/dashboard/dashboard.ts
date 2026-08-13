@@ -17,16 +17,10 @@ import {
 const MONTH_ONLY = new Intl.DateTimeFormat('pt-BR', { month: 'long' });
 const SHORT_DAY = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' });
 
-/**
- * Rampa das barras: mais forte no maior gasto, esmaecendo daí. Os valores são
- * tokens do tema, não hex — no escuro a rampa inverte (clara para escura).
- */
 const BAR_RAMP = ['var(--bar-1)', 'var(--bar-2)', 'var(--bar-3)', 'var(--bar-4)'];
 
-/** Linhas por página no cartão de lançamentos. */
 const RECENT_PAGE_SIZE = 4;
 
-/** Páginas guardadas; vêm de uma vez com o mês, então virar página não busca. */
 const RECENT_PAGES = 3;
 
 @Component({
@@ -40,7 +34,6 @@ export class Dashboard {
   private readonly transactions = inject(TransactionService);
   private readonly budgets = inject(BudgetService);
 
-  /** Sempre o dia 1 do mês em foco. */
   private readonly referenceMonth = signal(startOfMonth(new Date()));
 
   protected readonly loading = signal(true);
@@ -59,15 +52,10 @@ export class Dashboard {
     return MONTH_ONLY.format(new Date(current.getFullYear(), current.getMonth() - 1, 1));
   });
 
-  /** Bloqueia avançar para meses no futuro. */
   protected readonly canGoForward = computed(
     () => this.referenceMonth() < startOfMonth(new Date())
   );
 
-  /**
-   * Variação do saldo contra o mês anterior. null quando não dá para calcular:
-   * sem mês anterior carregado, ou saldo anterior zero (divisão sem sentido).
-   */
   protected readonly delta = computed(() => {
     const now = this.summary()?.balance;
     const before = this.previous()?.balance;
@@ -79,12 +67,10 @@ export class Dashboard {
     return ((now - before) / Math.abs(before)) * 100;
   });
 
-  /** Maior gasto do período — é a escala das barras. */
   private readonly topExpense = computed(() =>
     Math.max(0, ...this.expenseByCategory().map((item) => item.total))
   );
 
-  /** Receita, despesa e investimento dividem a mesma escala, senão as barras não se comparam. */
   private readonly flowScale = computed(() =>
     Math.max(
       this.summary()?.totalIncome ?? 0,
@@ -111,11 +97,6 @@ export class Dashboard {
     Math.max(1, Math.ceil(this.recent().length / RECENT_PAGE_SIZE))
   );
 
-  /**
-   * A fatia visível, sempre com quatro posições: quando a última página tem
-   * menos lançamentos, as vagas viram null e o template desenha linha vazia.
-   * Sem isso o cartão encolhe ao virar a página e a tela pula.
-   */
   protected readonly recentSlice = computed(() => {
     const start = this.recentPage() * RECENT_PAGE_SIZE;
     const page = this.recent().slice(start, start + RECENT_PAGE_SIZE);
@@ -168,7 +149,6 @@ export class Dashboard {
           0,
           RECENT_PAGE_SIZE * RECENT_PAGES
         ),
-        // O mês anterior só alimenta a variação: se falhar, o resto continua.
         this.transactions
           .getSummary(toIsoDate(before), toIsoDate(endOfMonth(before)))
           .catch(() => null),
@@ -178,7 +158,6 @@ export class Dashboard {
       this.expenseByCategory.set([...byCategory].sort((a, b) => b.total - a.total));
       this.monthBudgets.set(budgets);
       this.recent.set(page.content);
-      // Mês novo, lista nova: manter a página antiga poderia cair no vazio.
       this.recentPage.set(0);
       this.previous.set(previous);
     } catch (error) {
@@ -194,12 +173,10 @@ export class Dashboard {
     void this.load();
   }
 
-  /** Largura da barra em %, proporcional ao maior gasto. */
   protected barWidth(total: number): string {
     return this.share(total, this.topExpense());
   }
 
-  /** Cor da barra pela posição no ranking; do 4º em diante repete o último passo. */
   protected barColor(index: number): string {
     return BAR_RAMP[Math.min(index, BAR_RAMP.length - 1)];
   }

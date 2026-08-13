@@ -21,7 +21,6 @@ export class Categories {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly items = signal<Category[]>([]);
 
-  /** null = fechado; Category = editando; 'new' = criando. */
   protected readonly editing = signal<Category | 'new' | null>(null);
   protected readonly removing = signal<Category | null>(null);
   protected readonly saving = signal(false);
