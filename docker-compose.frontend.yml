@@ -1,0 +1,31 @@
+services:
+  frontend:
+    # Publicado pelo GitHub Actions em ghcr.io. Para buildar localmente em vez
+    # de puxar a imagem, use: docker compose -f docker-compose.frontend.yml build
+    image: ${FRONTEND_IMAGE:-ghcr.io/mateusq7/controlplus-frontend:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: controlplus-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:8080"
+    networks:
+      - controlplus
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  controlplus:
+    name: controlplus
+    external: true
