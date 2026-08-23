@@ -6,5 +6,4 @@ dist
 *.md
 .editorconfig
 .prettierrc
-.postcssrc.json
 docker-compose*.yml
