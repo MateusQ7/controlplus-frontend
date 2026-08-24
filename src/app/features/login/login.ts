@@ -86,8 +86,8 @@ export class Login {
     const { email, password } = this.form.getRawValue();
 
     try {
-      await this.auth.login(email, password);
-      await this.router.navigate(['/dashboard']);
+      const mustChangePassword = await this.auth.login(email, password);
+      await this.router.navigate([mustChangePassword ? '/trocar-senha' : '/dashboard']);
     } catch (error) {
       this.errorMessage.set(this.messageFor(error));
     } finally {

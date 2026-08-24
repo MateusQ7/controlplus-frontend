@@ -1,0 +1,210 @@
+<div class="page" [attr.aria-busy]="loading()">
+
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Usuários</h1>
+      <p class="page-sub">
+        @if (loading()) {
+          Carregando…
+        } @else {
+          {{ activeCount() }} ativo(s) · {{ inactiveCount() }} inativo(s).
+        }
+      </p>
+    </div>
+
+    <div class="page-actions">
+      <button type="button" class="btn" (click)="openNew()">Novo usuário</button>
+    </div>
+  </div>
+
+  <div role="alert" aria-live="polite">
+    @if (errorMessage(); as message) {
+      <div class="alert">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8" cy="8" r="6.75" stroke="currentColor" stroke-width="1.3" />
+          <path d="M8 4.7v4.1M8 11.1v.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        </svg>
+        <p>{{ message }}</p>
+        <button type="button" class="btn btn-ghost" (click)="load()">Tentar de novo</button>
+      </div>
+    }
+  </div>
+
+  <section class="card">
+    @if (loading()) {
+      <div class="skeleton skeleton-block"></div>
+    } @else {
+      <div class="toolbar">
+        <label class="sr-only" for="user-search">Buscar usuário</label>
+        <input id="user-search" class="control search" type="search" autocomplete="off"
+               placeholder="Buscar por nome ou e-mail"
+               [value]="search()" (input)="search.set($any($event.target).value)" />
+      </div>
+
+      @if (items().length === 0) {
+        <p class="empty">Nenhum usuário cadastrado.</p>
+      } @else if (visible().length === 0) {
+        <p class="empty">Nenhum usuário encontrado para essa busca.</p>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Nome</th>
+              <th scope="col" class="hide-narrow">E-mail</th>
+              <th scope="col">Papel</th>
+              <th scope="col" class="hide-narrow">Criado em</th>
+              <th scope="col">Situação</th>
+              <th scope="col"><span class="sr-only">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of visible(); track item.id) {
+              <tr [class.is-inactive]="!item.active">
+                <td>
+                  {{ item.name }}
+                  @if (isSelf(item)) {
+                    <span class="self">você</span>
+                  }
+                  <span class="email-narrow">{{ item.email }}</span>
+                </td>
+                <td class="dim hide-narrow">{{ item.email }}</td>
+                <td>{{ roleLabel(item.role) }}</td>
+                <td class="dim nowrap hide-narrow">{{ createdLabel(item.createdAt) }}</td>
+                <td>
+                  <div class="status">
+                    <span class="badge" [attr.data-status]="item.active ? 'OK' : null">
+                      <i class="badge-icon" aria-hidden="true"></i>
+                      {{ item.active ? 'Ativo' : 'Inativo' }}
+                    </span>
+
+                    @if (item.passwordChangeRequired && item.active) {
+                      <span class="badge" data-status="WARNING"
+                            title="A conta fica bloqueada até escolher a própria senha.">
+                        <i class="badge-icon" aria-hidden="true"></i>
+                        Senha temporária
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td class="actions">
+                  <button type="button" class="icon" (click)="openEdit(item)"
+                          [attr.aria-label]="'Editar ' + item.name">Editar</button>
+
+                  @if (!isSelf(item)) {
+                    <button type="button" class="icon" [class.danger]="item.active"
+                            (click)="askToggle(item)"
+                            [attr.aria-label]="(item.active ? 'Inativar ' : 'Reativar ') + item.name">
+                      {{ item.active ? 'Inativar' : 'Reativar' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </section>
+</div>
+
+<!-- ---------- criar / editar ---------- -->
+@if (editing()) {
+  <app-modal [heading]="modalTitle()" (closed)="closeForm()">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+
+      <div class="field">
+        <label for="user-name">Nome</label>
+        <input id="user-name" class="control" formControlName="name" autocomplete="off"
+               placeholder="Maria Silva" autofocus
+               [attr.aria-invalid]="invalid('name') || null" />
+        @if (invalid('name')) {
+          <p class="hint">Informe um nome de até 120 caracteres.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="user-email">E-mail</label>
+        <input id="user-email" class="control" type="email" formControlName="email"
+               autocomplete="off" placeholder="maria@exemplo.com"
+               [attr.aria-invalid]="invalid('email') || null" />
+        @if (invalid('email')) {
+          <p class="hint">Informe um e-mail válido.</p>
+        }
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="user-password">Senha</label>
+          <input id="user-password" class="control" type="password" formControlName="password"
+                 autocomplete="new-password"
+                 [placeholder]="editing() === 'new' ? 'Mínimo de 8 caracteres' : 'Deixe em branco para manter'"
+                 [attr.aria-invalid]="invalid('password') || null" />
+          @if (invalid('password')) {
+            <p class="hint">A senha deve ter de 8 a 72 caracteres.</p>
+          } @else if (!editingSelf()) {
+            <p class="note-inline">
+              A senha que você define é temporária: a pessoa fica bloqueada até
+              trocá-la no próximo login.
+            </p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="user-role">Papel</label>
+          <select id="user-role" class="control" formControlName="role">
+            <option value="USER">Usuário</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+          @if (editingSelf()) {
+            <p class="hint">Você não pode remover o próprio acesso de admin.</p>
+          }
+        </div>
+      </div>
+
+      @if (formError(); as message) {
+        <p class="hint" role="alert">{{ message }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="btn" [disabled]="saving()">
+          {{ saving() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+<!-- ---------- inativar / reativar ---------- -->
+@if (toggling(); as target) {
+  <app-modal [heading]="target.active ? 'Inativar usuário' : 'Reativar usuário'"
+             (closed)="cancelToggle()">
+    @if (target.active) {
+      <p class="note">
+        Inativar <strong>{{ target.name }}</strong>? A conta deixa de entrar no sistema e a
+        sessão atual não é renovada. Os dados permanecem e você pode reativar depois.
+      </p>
+    } @else {
+      <p class="note">
+        Reativar <strong>{{ target.name }}</strong>? A conta volta a entrar no sistema,
+        fazendo login de novo.
+      </p>
+    }
+
+    @if (formError(); as message) {
+      <p class="hint" role="alert">{{ message }}</p>
+    }
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" (click)="cancelToggle()" autofocus>Cancelar</button>
+      <button type="button" [class]="target.active ? 'btn btn-danger' : 'btn'"
+              [disabled]="saving()" (click)="confirmToggle()">
+        @if (saving()) {
+          Salvando…
+        } @else {
+          {{ target.active ? 'Inativar' : 'Reativar' }}
+        }
+      </button>
+    </div>
+  </app-modal>
+}

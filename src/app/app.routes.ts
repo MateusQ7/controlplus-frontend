@@ -1,10 +1,20 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
+import { passwordChangeGuard } from './core/guards/password-change.guard';
 
 export const routes: Routes = [
     {
         path: 'login',
         loadComponent: () => import('./features/login/login').then((m) => m.Login)
+    },
+    {
+        // Fora da casca de propósito: a conta ainda está travada, e um menu
+        // inteiro de links que responderiam 403 só atrapalharia.
+        path: 'trocar-senha',
+        canActivate: [passwordChangeGuard],
+        loadComponent: () =>
+            import('./features/password-change/password-change').then((m) => m.PasswordChange)
     },
     {
         // Tudo que exige sessão vive dentro da casca: uma sidebar só, um guard só.
@@ -36,6 +46,12 @@ export const routes: Routes = [
                 path: 'categorias',
                 loadComponent: () =>
                     import('./features/categories/categories').then((m) => m.Categories)
+            },
+            {
+                path: 'usuarios',
+                canActivate: [adminGuard],
+                loadComponent: () =>
+                    import('./features/users/users').then((m) => m.Users)
             },
             {
                 path: '',

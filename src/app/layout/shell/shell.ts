@@ -8,6 +8,8 @@ interface NavItem {
   label: string;
   /** Endpoint do backend que alimenta a tela — serve de documentação viva. */
   source: string;
+  /** Item só entra no menu para quem é ADMIN. */
+  adminOnly?: boolean;
 }
 
 @Component({
@@ -28,13 +30,18 @@ export class Shell {
     () => this.user()?.name?.trim().charAt(0) || '?'
   );
 
-  protected readonly nav: NavItem[] = [
+  private readonly allNav: NavItem[] = [
     { path: '/dashboard', label: 'Visão geral', source: '/transactions/summary' },
     { path: '/lancamentos', label: 'Lançamentos', source: '/transactions/period' },
     { path: '/orcamentos', label: 'Orçamentos', source: '/budgets' },
     { path: '/investimentos', label: 'Investimentos', source: '/investments/projection' },
     { path: '/categorias', label: 'Categorias', source: '/categories' },
+    { path: '/usuarios', label: 'Usuários', source: '/users', adminOnly: true },
   ];
+
+  protected readonly nav = computed(() =>
+    this.allNav.filter((item) => !item.adminOnly || this.auth.isAdmin())
+  );
 
   protected toggleMenu(): void {
     this.menuOpen.update((open) => !open);

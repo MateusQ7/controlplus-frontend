@@ -1,0 +1,100 @@
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.search {
+  max-width: 320px;
+}
+
+/* linha inativa perde peso, mas continua legível — não é lixo, é conta pausada */
+tr.is-inactive td {
+  color: var(--color-muted);
+}
+
+.self {
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* o e-mail sai da própria coluna em tela estreita e desce sob o nome */
+.email-narrow {
+  display: none;
+  font-size: 12.5px;
+  color: var(--color-muted);
+}
+
+/* dois selos na mesma célula quebram em vez de alargar a coluna */
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.note-inline {
+  margin: 8px 0 0 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+/* width 1% encolhe a coluna ao conteúdo; o padding evita colar no texto */
+.data-table .actions {
+  width: 1%;
+  padding-left: 16px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ações discretas até hover, mas sempre alcançáveis pelo teclado */
+.icon {
+  padding: 4px 9px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+tr:hover .icon,
+.icon:focus-visible {
+  opacity: 1;
+}
+
+.icon:hover {
+  background: var(--color-raised);
+  color: var(--color-fg);
+}
+
+.icon.danger:hover {
+  color: var(--color-danger-fg);
+}
+
+@media (hover: none) {
+  .icon {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .hide-narrow {
+    display: none;
+  }
+
+  .email-narrow {
+    display: block;
+  }
+
+  .search {
+    max-width: none;
+  }
+}
