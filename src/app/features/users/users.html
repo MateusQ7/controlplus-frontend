@@ -71,10 +71,20 @@
                 <td>{{ roleLabel(item.role) }}</td>
                 <td class="dim nowrap hide-narrow">{{ createdLabel(item.createdAt) }}</td>
                 <td>
-                  <span class="badge" [attr.data-status]="item.active ? 'OK' : null">
-                    <i class="badge-icon" aria-hidden="true"></i>
-                    {{ item.active ? 'Ativo' : 'Inativo' }}
-                  </span>
+                  <div class="status">
+                    <span class="badge" [attr.data-status]="item.active ? 'OK' : null">
+                      <i class="badge-icon" aria-hidden="true"></i>
+                      {{ item.active ? 'Ativo' : 'Inativo' }}
+                    </span>
+
+                    @if (item.passwordChangeRequired && item.active) {
+                      <span class="badge" data-status="WARNING"
+                            title="A conta fica bloqueada até escolher a própria senha.">
+                        <i class="badge-icon" aria-hidden="true"></i>
+                        Senha temporária
+                      </span>
+                    }
+                  </div>
                 </td>
                 <td class="actions">
                   <button type="button" class="icon" (click)="openEdit(item)"
@@ -131,6 +141,11 @@
                  [attr.aria-invalid]="invalid('password') || null" />
           @if (invalid('password')) {
             <p class="hint">A senha deve ter de 8 a 72 caracteres.</p>
+          } @else if (!editingSelf()) {
+            <p class="note-inline">
+              A senha que você define é temporária: a pessoa fica bloqueada até
+              trocá-la no próximo login.
+            </p>
           }
         </div>
 

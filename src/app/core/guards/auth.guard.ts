@@ -8,9 +8,15 @@ export const authGuard: CanActivateFn = async () => {
 
     // O token vive num cookie HttpOnly, então o front não consegue lê-lo:
     // a única forma de saber se a sessão vale é perguntar ao backend.
-    if (auth.isAuthenticated() || (await auth.checkSession())) {
-        return true;
+    if (!auth.isAuthenticated() && !(await auth.checkSession())) {
+        return router.createUrlTree(['/login']);
     }
 
-    return router.createUrlTree(['/login']);
+    // Senha temporária tranca o resto da API no backend; mandar para a tela de
+    // troca evita uma casca inteira de links que só responderiam 403.
+    if (auth.mustChangePassword()) {
+        return router.createUrlTree(['/trocar-senha']);
+    }
+
+    return true;
 };

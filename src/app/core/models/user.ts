@@ -8,6 +8,8 @@ export interface User {
     role: Role;
     createdAt: string;
     active: boolean;
+    /** Senha definida por um admin: a conta fica presa até trocar. */
+    passwordChangeRequired: boolean;
 }
 
 /** Espelha UserRequestDTO: senha obrigatória na criação. */

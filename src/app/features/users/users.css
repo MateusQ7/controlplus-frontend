@@ -29,6 +29,20 @@ tr.is-inactive td {
   color: var(--color-muted);
 }
 
+/* dois selos na mesma célula quebram em vez de alargar a coluna */
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.note-inline {
+  margin: 8px 0 0 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
 /* width 1% encolhe a coluna ao conteúdo; o padding evita colar no texto */
 .data-table .actions {
   width: 1%;
