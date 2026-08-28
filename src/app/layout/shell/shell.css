@@ -14,7 +14,6 @@
   min-height: 100vh;
 }
 
-/* ---------- sidebar ---------- */
 .sidebar {
   position: sticky;
   top: 0;
@@ -103,7 +102,6 @@
   font-weight: 500;
 }
 
-/* ---------- rodapé da sidebar ---------- */
 .side-foot {
   display: flex;
   align-items: center;
@@ -156,7 +154,6 @@
   color: var(--color-fg);
 }
 
-/* ---------- conteúdo ---------- */
 .content {
   min-width: 0;
 }
@@ -169,7 +166,6 @@
   display: none;
 }
 
-/* ---------- telas estreitas ---------- */
 @media (max-width: 940px) {
   .shell {
     grid-template-columns: 1fr;

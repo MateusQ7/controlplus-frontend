@@ -4,7 +4,6 @@
 @import 'tailwindcss/utilities.css';
 
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
-/* You can add global styles to this file, and also import other style files */
 
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/geist-mono';
@@ -239,7 +238,6 @@ body {
   border: 0;
 }
 
-/* ---------- moldura de página ---------- */
 .page {
   max-width: 1500px;
   margin: 0 auto;
@@ -285,7 +283,6 @@ body {
   margin-left: auto;
 }
 
-/* ---------- navegação de mês ---------- */
 .month {
   display: flex;
   align-items: center;
@@ -360,7 +357,6 @@ body {
   color: var(--color-faint);
 }
 
-/* ---------- botões ---------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -410,7 +406,6 @@ body {
   background: #e97479;
 }
 
-/* ---------- formulários ---------- */
 .field {
   margin-bottom: 18px;
 }
@@ -520,7 +515,6 @@ select.control option {
   margin-top: 22px;
 }
 
-/* ---------- tabela de dados ---------- */
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -570,7 +564,6 @@ select.control option {
   white-space: nowrap;
 }
 
-/* ---------- selos ---------- */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -612,7 +605,6 @@ select.control option {
   background: var(--color-invest);
 }
 
-/* ---------- trilhos (barra e medidor) ---------- */
 .track {
   height: 10px;
   border-radius: 999px;
@@ -640,7 +632,6 @@ select.control option {
   background: var(--color-status-exceed);
 }
 
-/* ---------- erro ---------- */
 .alert {
   display: flex;
   align-items: center;
@@ -665,7 +656,6 @@ select.control option {
   color: var(--color-danger-fg);
 }
 
-/* ---------- carregando ---------- */
 .skeleton {
   border-radius: 8px;
   background: linear-gradient(

@@ -92,7 +92,6 @@
   </section>
 </div>
 
-<!-- ---------- criar / editar ---------- -->
 @if (editing()) {
   <app-modal [heading]="modalTitle()" (closed)="closeForm()">
     <form [formGroup]="form" (ngSubmit)="save()" novalidate>
@@ -172,7 +171,6 @@
   </app-modal>
 }
 
-<!-- ---------- excluir ---------- -->
 @if (removing(); as target) {
   <app-modal heading="Excluir lançamento" (closed)="cancelRemove()">
     <p class="note">

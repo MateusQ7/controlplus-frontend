@@ -17,7 +17,6 @@
   background: var(--color-invest);
 }
 
-/* ---------- resumo ---------- */
 .hero {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
@@ -96,7 +95,6 @@
   background: var(--color-invest);
 }
 
-/* ---------- cartões ---------- */
 .grid {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
@@ -120,7 +118,6 @@
   text-underline-offset: 3px;
 }
 
-/* ---------- linhas com trilho ---------- */
 .bars {
   list-style: none;
   margin: 0;
@@ -147,7 +144,6 @@
   color: var(--color-muted);
 }
 
-/* ---------- tabela ---------- */
 .data-table td.num {
   font-family: var(--font-mono);
   font-size: 12.5px;
@@ -183,7 +179,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- carregando ---------- */
 /* mesma altura do texto que substituem, senão a tela pula ao carregar */
 .skeleton-hero {
   height: 38px;
@@ -195,7 +190,6 @@
   width: 74%;
 }
 
-/* ---------- telas estreitas ---------- */
 @media (max-width: 1280px) {
   .hero {
     grid-template-columns: repeat(3, 1fr);
