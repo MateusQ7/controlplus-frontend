@@ -12,7 +12,7 @@
     </svg>
 
     <div class="top-right">
-      <a class="consultant" href="#">Falar com consultor</a>
+      <button type="button" class="trial" (click)="openTrialNotice()">Quero testar</button>
       <app-theme-toggle />
     </div>
   </header>
@@ -109,3 +109,19 @@
     </footer>
   }
 </div>
+
+@if (trialNotice()) {
+  <app-modal heading="Em desenvolvimento" (closed)="closeTrialNotice()">
+    <p class="note">
+      Que bom que você quer testar o Control+. O pedido de teste ainda está em
+      desenvolvimento, então por enquanto não dá pra enviar por aqui. Falta
+      pouco: volte logo que a gente deve ter novidade.
+    </p>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" (click)="closeTrialNotice()" autofocus>
+        Entendi
+      </button>
+    </div>
+  </app-modal>
+}
