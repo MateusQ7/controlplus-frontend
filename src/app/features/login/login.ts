@@ -6,12 +6,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MarketService } from '../../core/services/market.service';
 import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
 import { MarketSnapshot } from '../../core/models/market';
+import { Modal } from '../../shared/components/modal/modal';
 
 const ROTATION_MS = 45_000;
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, ThemeToggle],
+  imports: [ReactiveFormsModule, ThemeToggle, Modal],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -31,6 +32,8 @@ export class Login {
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly market$ = signal<MarketSnapshot | null>(null);
+
+  protected readonly trialNotice = signal(false);
 
   private readonly destroyRef = inject(DestroyRef);
   private group = 0;
@@ -62,6 +65,14 @@ export class Login {
       }
     } catch {
     }
+  }
+
+  protected openTrialNotice(): void {
+    this.trialNotice.set(true);
+  }
+
+  protected closeTrialNotice(): void {
+    this.trialNotice.set(false);
   }
 
   protected changeLabel(change: number): string {

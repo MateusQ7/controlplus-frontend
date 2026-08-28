@@ -93,7 +93,6 @@
   }
 </div>
 
-<!-- ---------- criar / editar ---------- -->
 @if (editing()) {
   <app-modal [heading]="isNew() ? 'Novo orçamento' : 'Editar limite'" (closed)="closeForm()">
     <form [formGroup]="form" (ngSubmit)="save()" novalidate>
@@ -157,7 +156,6 @@
   </app-modal>
 }
 
-<!-- ---------- excluir ---------- -->
 @if (removing(); as target) {
   <app-modal heading="Excluir orçamento" (closed)="cancelRemove()">
     <p class="note">

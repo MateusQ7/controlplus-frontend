@@ -45,7 +45,6 @@
     </section>
   } @else {
 
-    <!-- ---------- números da carteira ---------- -->
     <section class="hero" aria-label="Resumo da carteira">
       <div class="card hero-main">
         <p class="eyebrow">Saldo líquido hoje</p>
@@ -74,7 +73,6 @@
       </div>
     </section>
 
-    <!-- ---------- projeção ---------- -->
     <section class="card" aria-labelledby="proj-title">
       <div class="card-head">
         <h2 class="card-title" id="proj-title">Projeção da carteira</h2>
@@ -155,7 +153,6 @@
       }
     </section>
 
-    <!-- ---------- posições ---------- -->
     <div class="grid">
       @for (row of rows(); track row.investment.id) {
         <section class="card position">
@@ -221,7 +218,6 @@
       }
     </div>
 
-    <!-- ---------- mês a mês ---------- -->
     @if (totals().length > 0) {
       <section class="card last-card" aria-labelledby="months-title">
         <h2 class="card-title" id="months-title">Mês a mês</h2>
@@ -259,7 +255,6 @@
   }
 </div>
 
-<!-- ---------- criar / editar ---------- -->
 @if (editing()) {
   <app-modal [heading]="isNew() ? 'Novo investimento' : 'Editar investimento'"
              (closed)="closeForm()">
@@ -365,7 +360,6 @@
   </app-modal>
 }
 
-<!-- ---------- aportes e resgates ---------- -->
 @if (managing(); as target) {
   <app-modal [heading]="'Aportes e resgates · ' + target.name" (closed)="closeMovements()">
 
@@ -484,7 +478,6 @@
   </app-modal>
 }
 
-<!-- ---------- excluir ---------- -->
 @if (removing(); as target) {
   <app-modal heading="Excluir investimento" (closed)="cancelRemove()">
     <p class="note">
