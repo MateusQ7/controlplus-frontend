@@ -107,7 +107,6 @@
   </section>
 </div>
 
-<!-- ---------- criar / editar ---------- -->
 @if (editing()) {
   <app-modal [heading]="modalTitle()" (closed)="closeForm()">
     <form [formGroup]="form" (ngSubmit)="save()" novalidate>
@@ -175,7 +174,6 @@
   </app-modal>
 }
 
-<!-- ---------- inativar / reativar ---------- -->
 @if (toggling(); as target) {
   <app-modal [heading]="target.active ? 'Inativar usuário' : 'Reativar usuário'"
              (closed)="cancelToggle()">

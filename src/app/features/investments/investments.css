@@ -1,4 +1,3 @@
-/* ---------- resumo da carteira ---------- */
 .hero {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
@@ -47,7 +46,6 @@
   color: var(--color-danger-fg);
 }
 
-/* ---------- horizonte ---------- */
 .chips {
   display: flex;
   gap: 4px;
@@ -78,7 +76,6 @@
   color: var(--color-accent);
 }
 
-/* ---------- gráfico ---------- */
 .legend {
   display: flex;
   gap: 18px;
@@ -212,7 +209,6 @@
   color: var(--color-faint);
 }
 
-/* ---------- posições ---------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -364,7 +360,6 @@
   }
 }
 
-/* ---------- tabela ---------- */
 .data-table td.num {
   font-family: var(--font-mono);
   font-size: 12.5px;
@@ -378,7 +373,6 @@
   color: var(--color-danger-fg);
 }
 
-/* ---------- aportes e resgates ---------- */
 .movements {
   list-style: none;
   margin: 0 0 22px;
@@ -445,7 +439,6 @@
   color: var(--color-muted);
 }
 
-/* ---------- formulário ---------- */
 /* percentual não é dinheiro: o adorno vai à direita e o campo não ganha prefixo */
 .rate {
   position: relative;
@@ -507,7 +500,6 @@
   color: var(--color-faint);
 }
 
-/* ---------- telas estreitas ---------- */
 @media (max-width: 1280px) {
   .hero {
     grid-template-columns: repeat(3, 1fr);
