@@ -54,17 +54,20 @@
   gap: 14px;
 }
 
-.consultant {
+.trial {
+  padding: 0;
+  border: none;
+  background: none;
   font-family: var(--font-mono);
   font-size: var(--text-eyebrow);
   letter-spacing: 0.19em;
   text-transform: uppercase;
   color: var(--color-muted);
-  text-decoration: none;
+  cursor: pointer;
   transition: color 0.15s;
 }
 
-.consultant:hover {
+.trial:hover {
   color: var(--color-fg);
 }
 
@@ -387,7 +390,7 @@
 }
 
 @media (max-width: 420px) {
-  .consultant {
+  .trial {
     display: none;
   }
 }
